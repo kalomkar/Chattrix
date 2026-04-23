@@ -1,0 +1,114 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile and settings",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "status": { "type": "string" },
+        "lastSeen": { "type": "string", "format": "date-time" },
+        "ghostMode": {
+          "type": "object",
+          "properties": {
+            "hideOnline": { "type": "boolean" },
+            "hideTyping": { "type": "boolean" },
+            "hideBlueTicks": { "type": "boolean" }
+          }
+        },
+        "autoReply": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "message": { "type": "string" }
+          }
+        }
+      },
+      "required": ["uid", "email"]
+    },
+    "Chat": {
+      "title": "Chat",
+      "description": "A conversation between users or a group",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "participants": { "type": "array", "items": { "type": "string" } },
+        "lastMessage": {
+          "type": "object",
+          "properties": {
+            "text": { "type": "string" },
+            "senderId": { "type": "string" },
+            "timestamp": { "type": "string", "format": "date-time" }
+          }
+        },
+        "isGroup": { "type": "boolean" },
+        "groupMetadata": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "photoURL": { "type": "string" },
+            "admins": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Message": {
+      "title": "Message",
+      "description": "Individual message in a chat",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "text": { "type": "string" },
+        "senderId": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "type": { "enum": ["text", "image", "video", "audio", "voice"] },
+        "mediaUrl": { "type": "string" },
+        "status": { "enum": ["sent", "delivered", "seen"] },
+        "reactions": { "type": "object" },
+        "replyTo": { "type": "string" },
+        "disappearing": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "duration": { "type": "number" }
+          }
+        }
+      }
+    },
+    "Story": {
+      "title": "Story",
+      "description": "Ephemeral status update",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "mediaUrl": { "type": "string" },
+        "caption": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "expiresAt": { "type": "string", "format": "date-time" },
+        "views": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "chats/{chatId}": {
+      "schema": "Chat",
+      "description": "Chat metadata"
+    },
+    "chats/{chatId}/messages/{messageId}": {
+      "schema": "Message",
+      "description": "Messages within a chat"
+    },
+    "stories/{storyId}": {
+      "schema": "Story",
+      "description": "User status stories"
+    }
+  }
+}

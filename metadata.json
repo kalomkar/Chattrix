@@ -1,0 +1,6 @@
+{
+  "name": "Chattrix",
+  "description": "A feature-rich real-time messaging platform inspired by WhatsApp and GB WhatsApp, featuring ghost mode, AI smart replies, disappearing messages, and more.",
+  "requestFramePermissions": ["camera", "microphone", "geolocation"],
+  "majorCapabilities": ["real-time messaging", "AI-powered chat", "media sharing"]
+}
