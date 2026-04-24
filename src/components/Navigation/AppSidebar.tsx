@@ -75,8 +75,8 @@ export default function AppSidebar({ activeTab, setActiveTab }: AppSidebarProps)
               animate={{ opacity: 1, x: 0 }}
               className="flex flex-col"
             >
-              <span className="text-black dark:text-white font-black tracking-tighter text-xl leading-none">NEXUS</span>
-              <span className="text-green-500 text-[10px] uppercase font-black tracking-[0.3em] mt-1">v.2.4 Premium</span>
+              <span className="text-black dark:text-white font-black tracking-tighter text-xl leading-none">CHATTRIX</span>
+              <span className="text-green-500 text-[10px] uppercase font-black tracking-[0.3em] mt-1">v.2.4 Premium AI</span>
             </motion.div>
           )}
         </div>

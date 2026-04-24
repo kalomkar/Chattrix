@@ -35,13 +35,19 @@ service cloud.firestore {
     match /chats/{chatId} {
       allow read: if isSignedIn() && (request.auth.uid in resource.data.participants);
       allow create: if isSignedIn();
-      allow update: if isSignedIn() && (request.auth.uid in resource.data.participants);
+      allow update: if isSignedIn() && (request.auth.uid in resource.data.participants) && (
+        request.resource.data.lastMessage.senderId == request.auth.uid || 
+        request.resource.data.lastMessage.senderId == 'nova-ai-bot'
+      );
     }
 
     // Messages
     match /chats/{chatId}/messages/{messageId} {
       allow read: if isChatParticipant(chatId);
-      allow create: if isChatParticipant(chatId) && request.resource.data.senderId == request.auth.uid;
+      allow create: if isChatParticipant(chatId) && (
+        request.resource.data.senderId == request.auth.uid || 
+        (request.resource.data.senderId == 'nova-ai-bot' && 'nova-ai-bot' in get(/databases/$(database)/documents/chats/$(chatId)).data.participants)
+      );
       allow update: if isChatParticipant(chatId);
       allow delete: if isChatParticipant(chatId) && (
         resource.data.senderId == request.auth.uid || 

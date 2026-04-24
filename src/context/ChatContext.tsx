@@ -39,6 +39,21 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     const unsubscribe = onSnapshot(q, 
       (snapshot) => {
         const contactsData: User[] = snapshot.docs.map(d => ({ ...d.data() } as User));
+        
+        // Always include Nova AI in contacts
+        const novaBot: User = {
+          uid: 'nova-ai-bot',
+          displayName: 'Nova AI ✨',
+          email: 'nova@chattrix.ai',
+          photoURL: 'https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Nova',
+          phoneNumber: '',
+          status: 'Your Intelligent Chattrix Assistant'
+        };
+        
+        if (!contactsData.find(c => c.uid === novaBot.uid)) {
+          contactsData.unshift(novaBot);
+        }
+        
         setContacts(contactsData);
       },
       (error) => handleFirestoreError(error, 'list', `users/${currentUser.uid}/contacts`, auth.currentUser)
@@ -74,16 +89,29 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const startNewChat = async (email: string) => {
     if (!currentUser) return;
     try {
-      const usersRef = collection(db, 'users');
-      const q = query(usersRef, where('email', '==', email));
-      const querySnapshot = await getDocs(q);
-      
-      if (querySnapshot.empty) {
-        alert("User not found!");
-        return;
+      let targetUser: User | null = null;
+
+      if (email === 'nova@chattrix.ai') {
+        targetUser = {
+          uid: 'nova-ai-bot',
+          displayName: 'Nova AI ✨',
+          email: 'nova@chattrix.ai',
+          photoURL: 'https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Nova',
+          phoneNumber: '',
+          status: 'Your Intelligent Chattrix Assistant'
+        };
+      } else {
+        const usersRef = collection(db, 'users');
+        const q = query(usersRef, where('email', '==', email));
+        const querySnapshot = await getDocs(q);
+        
+        if (querySnapshot.empty) {
+          alert("User not found!");
+          return;
+        }
+        targetUser = querySnapshot.docs[0].data() as User;
       }
 
-      const targetUser = querySnapshot.docs[0].data() as User;
       if (targetUser.uid === currentUser.uid) return;
 
       // Check if chat already exists
@@ -91,7 +119,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       const chatQuery = query(chatsRef, where('participants', 'array-contains', currentUser.uid));
       const chatSnapshot = await getDocs(chatQuery);
       
-      let existingChat = chatSnapshot.docs.find(d => (d.data() as Chat).participants.includes(targetUser.uid));
+      let existingChat = chatSnapshot.docs.find(d => (d.data() as Chat).participants.includes(targetUser!.uid));
       
       if (existingChat) {
         setActiveChat({ id: existingChat.id, ...existingChat.data() } as Chat);
@@ -133,13 +161,24 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
           const details: Record<string, User> = {};
           for (const pId of chat.participants) {
             if (pId !== currentUser.uid) {
-              try {
-                const uDoc = await getDoc(doc(db, 'users', pId));
-                if (uDoc.exists()) {
-                  details[pId] = uDoc.data() as User;
+              if (pId === 'nova-ai-bot') {
+                 details[pId] = {
+                   uid: 'nova-ai-bot',
+                   displayName: 'Nova AI',
+                   email: 'nova@chattrix.ai',
+                   photoURL: 'https://api.dicebear.com/7.x/bottts-neutral/svg?seed=Nova',
+                   phoneNumber: '',
+                   status: 'Nova AI Assistant is Online'
+                 };
+              } else {
+                try {
+                  const uDoc = await getDoc(doc(db, 'users', pId));
+                  if (uDoc.exists()) {
+                    details[pId] = uDoc.data() as User;
+                  }
+                } catch (e) {
+                  console.error("Error fetching user details", e);
                 }
-              } catch (e) {
-                console.error("Error fetching user details", e);
               }
             }
           }
@@ -300,13 +339,65 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       updatedAt: serverTimestamp()
     });
 
-    // Emit via socket for real-time delivery
+    // Nova AI Bot logic
     const recipientId = activeChat.participants.find(p => p !== currentUser.uid);
-    socket.emit('send_message', {
-      chatId: activeChat.id,
-      recipientId,
-      message: messageData
-    });
+    if (recipientId === 'nova-ai-bot' && type === 'text') {
+      // Small delay to feel natural
+      setTimeout(async () => {
+        try {
+          const { getAIAssistance } = await import('../services/geminiService');
+          
+          // Get recent history
+          const q = query(
+            collection(db, 'chats', activeChat.id, 'messages'),
+            orderBy('timestamp', 'desc'),
+            limit(10)
+          );
+          const snap = await getDocs(q);
+          const history = snap.docs.reverse().map(d => {
+            const m = d.data();
+            return { 
+              sender: m.senderId === currentUser.uid ? 'User' : 'Nova',
+              text: m.text 
+            };
+          });
+
+          const { reply } = await getAIAssistance(history, true);
+          
+          if (reply) {
+            const novaMsg = {
+              text: reply,
+              senderId: 'nova-ai-bot',
+              timestamp: serverTimestamp(),
+              type: 'text' as const,
+              mediaUrl: null,
+              status: 'delivered' as const,
+              chatId: activeChat.id
+            };
+            await addDoc(collection(db, 'chats', activeChat.id, 'messages'), novaMsg);
+            await updateDoc(doc(db, 'chats', activeChat.id), {
+              lastMessage: {
+                text: reply,
+                senderId: 'nova-ai-bot',
+                timestamp: serverTimestamp()
+              },
+              updatedAt: serverTimestamp()
+            });
+          }
+        } catch (e) {
+          console.error("Nova AI Response Error:", e);
+        }
+      }, 1000);
+    }
+
+    // Emit via socket for real-time delivery
+    if (recipientId !== 'nova-ai-bot') {
+      socket.emit('send_message', {
+        chatId: activeChat.id,
+        recipientId,
+        message: messageData
+      });
+    }
   };
 
   const setTyping = useCallback((isTyping: boolean) => {

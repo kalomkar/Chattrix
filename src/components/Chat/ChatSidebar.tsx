@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useChat } from '../../context/ChatContext';
 import { useAuth } from '../../context/AuthContext';
 import { useStory } from '../../context/StoryContext';
-import { Search, MoreVertical, Ghost, MessageSquarePlus, Users, Archive, Phone, Video, Plus } from 'lucide-react';
+import { Search, MoreVertical, Ghost, MessageSquarePlus, Users, Archive, Phone, Video, Plus, Wand2 } from 'lucide-react';
 import { cn, formatTime } from '../../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 import StatusCarousel from '../Status/StatusCarousel';
@@ -13,11 +13,22 @@ interface ChatSidebarProps {
 }
 
 export default function ChatSidebar({ onGhostClick }: ChatSidebarProps) {
-  const { chats, setActiveChat, activeChat, onlineUsers, typingStatus } = useChat();
+  const { chats, setActiveChat, activeChat, onlineUsers, typingStatus, contacts, startNewChat } = useChat();
   const { currentUser } = useAuth();
   const [search, setSearch] = useState('');
   const [showProfile, setShowProfile] = useState(false);
   const [filter, setFilter] = useState<'all' | 'unread' | 'groups' | 'favorites'>('all');
+
+  const novaContact = contacts.find(c => c.uid === 'nova-ai-bot');
+  const hasNovaChat = chats.find(c => c.participants.includes('nova-ai-bot'));
+
+  const handleNovaClick = async () => {
+    if (hasNovaChat) {
+      setActiveChat(hasNovaChat);
+    } else {
+      await startNewChat('nova@chattrix.ai');
+    }
+  };
 
   const filteredChats = chats.filter(chat => {
       const otherParticipantId = chat.participants.find(p => p !== currentUser?.uid);
@@ -82,6 +93,26 @@ export default function ChatSidebar({ onGhostClick }: ChatSidebarProps) {
           />
         </div>
       </div>
+
+      {/* Nova AI Quick Access */}
+      {!hasNovaChat && (
+        <div className="px-4 mb-4">
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={handleNovaClick}
+            className="w-full bg-gradient-to-r from-green-500/20 to-blue-500/20 border border-green-500/20 rounded-2xl p-4 flex items-center gap-4 text-left group transition-all"
+          >
+            <div className="w-12 h-12 bg-black/20 rounded-full flex items-center justify-center text-green-500 group-hover:scale-110 transition-transform">
+              <Wand2 size={24} />
+            </div>
+            <div>
+              <p className="text-sm font-black text-black dark:text-white leading-tight">Chat with Nova ✨</p>
+              <p className="text-[10px] uppercase font-bold text-black/30 dark:text-white/30 tracking-widest mt-1">Your Personal AI is Ready</p>
+            </div>
+          </motion.button>
+        </div>
+      )}
 
       {/* Filter Tabs */}
       <div className="px-4 py-2 flex items-center gap-2 overflow-x-auto no-scrollbar">
