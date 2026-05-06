@@ -81,8 +81,8 @@ export default function MessageItem({ message, isFirstInSequence }: MessageItemP
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
             className={cn(
-              "absolute top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-2 py-1 bg-[#233138] border border-white/10 rounded-full shadow-xl z-20",
-              isMine ? "right-full mr-3" : "left-full ml-3"
+              "absolute top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-2 py-1 bg-[#151B21] border border-white/10 rounded-full shadow-2xl z-20 backdrop-blur-md",
+              isMine ? "right-full mr-3 flex-row-reverse" : "left-full ml-3"
             )}
           >
             <button 
@@ -114,22 +114,25 @@ export default function MessageItem({ message, isFirstInSequence }: MessageItemP
       </AnimatePresence>
 
       <div className={cn(
-        "max-w-[85%] sm:max-w-[70%] relative px-3 py-1.5 shadow-md flex flex-col transition-all",
+        "max-w-[85%] sm:max-w-[70%] relative px-4 py-2.5 flex flex-col transition-all border",
         isMine 
-          ? "bg-[#005c4b] text-[#e9edef] rounded-l-xl rounded-tr-xl rounded-br-none" 
-          : "bg-[#202c33] text-[#e9edef] rounded-r-xl rounded-tl-xl rounded-bl-none",
-        isFirstInSequence ? "mt-2" : "mt-0.5",
-        (translatedText || tone) && "ring-1 ring-green-500/30"
+          ? "bg-[#065F46] text-[#e9edef] rounded-2xl rounded-tr-none border-emerald-500/20 shadow-[0_5px_15px_rgba(6,95,70,0.2)]" 
+          : "bg-[#151B21] text-[#e9edef] rounded-2xl rounded-tl-none border-white/5",
+        isFirstInSequence ? "mt-4" : "mt-1",
+        (translatedText || tone) && "ring-2 ring-emerald-500/30 border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.1)]"
       )}>
-        <div className="flex flex-col relative z-10 pr-12 min-w-[60px]">
+        <div className="flex flex-col relative z-10 pr-14 min-w-[80px]">
             {tone && (
-              <div className="flex items-center gap-1 mb-1 text-[10px] font-black uppercase tracking-widest text-blue-400/80">
-                <Sparkles size={10} />
-                <span>Detected: {tone}</span>
+              <div className="flex items-center gap-1.5 mb-2 text-[9px] font-black uppercase tracking-[0.15em] text-emerald-400">
+                <div className="w-1 h-1 bg-emerald-400 rounded-full animate-pulse" />
+                <span>PHASE: {tone}</span>
               </div>
             )}
             
-            <p className="text-[14.2px] leading-relaxed break-words">
+            <p className={cn(
+              "text-[14px] leading-relaxed break-words font-medium",
+              isMine ? "text-white" : "text-white/90"
+            )}>
               {translatedText || message.text}
             </p>
 
@@ -139,12 +142,12 @@ export default function MessageItem({ message, isFirstInSequence }: MessageItemP
               </p>
             )}
 
-            <div className="absolute bottom-[-1px] right-[-4px] flex items-center gap-1">
-                <span className="text-[10px] text-[#8696a0] font-medium leading-none">
+            <div className="absolute bottom-0 right-0 flex items-center gap-1.5">
+                <span className="text-[9px] text-white/30 font-mono tracking-tighter">
                     {formatTime(message.timestamp)}
                 </span>
                 {message.disappearing?.enabled && (
-                  <Clock size={10} className="text-amber-500/50" />
+                  <Clock size={10} className="text-emerald-500/40" />
                 )}
                 {isMine && <StatusIcon />}
             </div>

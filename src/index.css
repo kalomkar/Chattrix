@@ -1,18 +1,19 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
 @layer base {
   :root {
     --font-size-base: 14px;
-    --wa-green: #22c55e;
-    --wa-dark-green: #064e3b;
-    --wa-dark-bg: #0b141a;
+    --wa-green: #10B981;
+    --wa-dark-green: #064E3B;
+    --wa-dark-bg: #0B0E11;
     --color-glass: rgba(0, 0, 0, 0.05);
     --color-glass-border: rgba(0, 0, 0, 0.1);
   }
 
   .dark {
-    --color-glass: rgba(255, 255, 255, 0.03);
-    --color-glass-border: rgba(255, 255, 255, 0.08);
+    --color-glass: rgba(255, 255, 255, 0.02);
+    --color-glass-border: rgba(255, 255, 255, 0.05);
   }
 
   .font-size-small { --font-size-base: 12px; }
@@ -24,21 +25,24 @@
   }
 
   body {
-    @apply bg-white dark:bg-[#0b141a] antialiased text-black dark:text-white font-sans transition-colors duration-300;
+    @apply bg-white dark:bg-[#0B0E11] antialiased text-black dark:text-white font-sans selection:bg-emerald-500/30;
   }
 }
 
 @theme {
-  --color-glass: rgba(255, 255, 255, 0.03);
-  --color-glass-border: rgba(255, 255, 255, 0.08);
-  --color-accent-green: #22c55e;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Outfit", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  --color-glass: rgba(255, 255, 255, 0.02);
+  --color-glass-border: rgba(255, 255, 255, 0.05);
+  --color-accent-green: #10B981;
   --color-accent-dark-green: #064e3b;
 }
 
 .glass {
   background: var(--color-glass);
-  backdrop-filter: blur(40px);
-  -webkit-backdrop-filter: blur(40px);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--color-glass-border);
 }
 
@@ -47,16 +51,17 @@
   inset: 0;
   z-index: -1;
   background: 
-    radial-gradient(circle at 10% 10%, #064e3b 0%, transparent 60%),
-    radial-gradient(circle at 90% 90%, #166534 0%, transparent 60%),
-    radial-gradient(circle at 80% 20%, #052e16 0%, transparent 60%),
-    radial-gradient(circle at 20% 80%, #15803d 0%, transparent 60%);
+    radial-gradient(circle at 0% 0%, #064E3B 0%, transparent 40%),
+    radial-gradient(circle at 100% 100%, #10B981 0%, transparent 40%),
+    radial-gradient(circle at 100% 0%, #065F46 0%, transparent 30%),
+    radial-gradient(circle at 0% 100%, #064E3B 0%, transparent 30%);
+  opacity: 0.15;
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -64,12 +69,12 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #374045;
-  border-radius: 5px;
+  background: #202c33;
+  border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #4a555c;
+  background: #374045;
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */

@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { useChat } from '../../context/ChatContext';
 import { useAuth } from '../../context/AuthContext';
 import { useStory } from '../../context/StoryContext';
-import { Search, MoreVertical, Ghost, MessageSquarePlus, Users, Archive, Phone, Video, Plus, Wand2 } from 'lucide-react';
+import { Search, MoreVertical, Ghost, MessageSquarePlus, Users, Archive, Phone, Video, Plus, Wand2, Share2, Sparkles, UserPlus } from 'lucide-react';
 import { cn, formatTime } from '../../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 import StatusCarousel from '../Status/StatusCarousel';
 import ProfileModal from '../Profile/ProfileModal';
+import AddContactModal from './AddContactModal';
 
 interface ChatSidebarProps {
   onGhostClick: () => void;
@@ -17,6 +18,7 @@ export default function ChatSidebar({ onGhostClick }: ChatSidebarProps) {
   const { currentUser } = useAuth();
   const [search, setSearch] = useState('');
   const [showProfile, setShowProfile] = useState(false);
+  const [showAddContact, setShowAddContact] = useState(false);
   const [filter, setFilter] = useState<'all' | 'unread' | 'groups' | 'favorites'>('all');
 
   const novaContact = contacts.find(c => c.uid === 'nova-ai-bot');
@@ -49,21 +51,25 @@ export default function ChatSidebar({ onGhostClick }: ChatSidebarProps) {
   ];
 
   return (
-    <div className="flex flex-col h-full bg-transparent">
+    <div className="flex flex-col h-full bg-transparent overflow-hidden">
       {/* Header Area */}
-      <div className="p-4 flex items-center justify-between">
-          <h2 className="text-xl font-bold tracking-tight text-black dark:text-white">Chats</h2>
-          <div className="flex items-center gap-2">
+      <div className="p-6 pb-2 flex items-center justify-between">
+          <div className="flex flex-col">
+            <h2 className="text-2xl font-[900] tracking-tighter text-black dark:text-white font-display">CHATTRIX</h2>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
+              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-green-500/80">Network Active</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-1">
               <button 
-                onClick={() => {
-                  // This is the "New Chat" button, it should show contacts or new chat modal
-                  // For now, let's keep it as is but themed
-                }}
-                className="p-2 text-black/40 dark:text-white/40 hover:text-green-500 hover:bg-black/5 dark:hover:bg-white/5 rounded-xl transition-all"
+                onClick={() => setShowAddContact(true)}
+                className="p-2.5 bg-black/[0.03] dark:bg-white/[0.03] border border-black/5 dark:border-white/5 text-black/40 dark:text-white/40 hover:text-green-500 hover:bg-green-500/10 rounded-2xl transition-all group"
+                title="New Chat"
               >
-                  <MessageSquarePlus size={20} />
+                  <Plus size={20} className="group-hover:rotate-90 transition-transform duration-300" />
               </button>
-              <button className="p-2 text-white/40 hover:text-green-500 hover:bg-white/5 rounded-xl transition-all">
+              <button className="p-2.5 bg-black/[0.03] dark:bg-white/[0.03] border border-black/5 dark:border-white/5 text-black/40 dark:text-white/40 hover:text-green-500 hover:bg-green-500/10 rounded-2xl transition-all">
                   <MoreVertical size={20} />
               </button>
           </div>
@@ -101,14 +107,20 @@ export default function ChatSidebar({ onGhostClick }: ChatSidebarProps) {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={handleNovaClick}
-            className="w-full bg-gradient-to-r from-green-500/20 to-blue-500/20 border border-green-500/20 rounded-2xl p-4 flex items-center gap-4 text-left group transition-all"
+            className="w-full relative overflow-hidden bg-[#151B21] border border-emerald-500/20 rounded-[1.8rem] p-5 flex items-center gap-4 text-left group transition-all shadow-xl"
           >
-            <div className="w-12 h-12 bg-black/20 rounded-full flex items-center justify-center text-green-500 group-hover:scale-110 transition-transform">
-              <Wand2 size={24} />
+            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-20 transition-opacity">
+              <Sparkles size={80} />
             </div>
-            <div>
-              <p className="text-sm font-black text-black dark:text-white leading-tight">Chat with Nova ✨</p>
-              <p className="text-[10px] uppercase font-bold text-black/30 dark:text-white/30 tracking-widest mt-1">Your Personal AI is Ready</p>
+            <div className="w-14 h-14 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform relative z-10">
+              <Wand2 size={28} />
+            </div>
+            <div className="relative z-10">
+              <p className="text-sm font-black text-white leading-tight flex items-center gap-2">
+                Talk to Nova AI
+                <span className="inline-flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+              </p>
+              <p className="text-[10px] uppercase font-bold text-white/30 tracking-[0.15em] mt-1.5 line-clamp-1">Personal Assistant Protocol Active</p>
             </div>
           </motion.button>
         </div>
@@ -133,7 +145,17 @@ export default function ChatSidebar({ onGhostClick }: ChatSidebarProps) {
       </div>
 
       {/* Chat List */}
-      <div className="flex-1 overflow-y-auto no-scrollbar px-2 pt-2 space-y-1">
+      <div className="flex-1 overflow-y-auto no-scrollbar px-3 pt-2 space-y-1.5 pb-24 relative">
+        <div className="flex items-center justify-between px-2 mb-2">
+          <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">Active Transmissions</h3>
+          <button 
+            onClick={() => setShowAddContact(true)}
+            className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-emerald-500 hover:text-emerald-400 transition-colors"
+          >
+            <UserPlus size={10} />
+            Invite Friends
+          </button>
+        </div>
         <AnimatePresence initial={false}>
           {filteredChats.map((chat) => {
             const otherParticipantId = chat.participants.find(p => p !== currentUser?.uid);
@@ -225,7 +247,37 @@ export default function ChatSidebar({ onGhostClick }: ChatSidebarProps) {
         )}
       </div>
 
+      {/* Floating Action Button for Profile */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] z-50">
+        <motion.button
+           whileHover={{ scale: 1.02, y: -2 }}
+           whileTap={{ scale: 0.98 }}
+           onClick={() => setShowProfile(true)}
+           className="w-full bg-[#151B21] border border-white/5 rounded-3xl p-3 flex items-center gap-4 shadow-2xl backdrop-blur-xl"
+        >
+          <div className="relative">
+            <img src={currentUser?.photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${currentUser?.displayName}`} alt="Profile" className="w-10 h-10 rounded-2xl object-cover border border-white/10" />
+            <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-[#151B21] rounded-full" />
+          </div>
+          <div className="text-left flex-1">
+            <p className="text-xs font-black text-white truncate">{currentUser?.displayName}</p>
+            <p className="text-[10px] font-bold text-white/30 tracking-wider">Operational Commander</p>
+          </div>
+          <div className="p-2.5 bg-white/5 rounded-2xl text-white/40">
+            <MoreVertical size={16} />
+          </div>
+        </motion.button>
+      </div>
+
       {showProfile && <ProfileModal onClose={() => setShowProfile(false)} />}
+      <AnimatePresence>
+        {showAddContact && (
+          <AddContactModal 
+            onClose={() => setShowAddContact(false)} 
+            onShowToast={(msg, type) => console.log(msg)} // We could use a global toast
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

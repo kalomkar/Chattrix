@@ -125,51 +125,77 @@ export default function ChatArea() {
   const isTyping = otherParticipantId && typingStatus[otherParticipantId];
 
   return (
-    <div className="flex flex-col h-full bg-[#0b141a] relative overflow-hidden">
-      {/* WhatsApp style pattern background */}
-      <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png')] bg-repeat" />
+    <div className="flex flex-col h-full bg-[#0B0E11] relative overflow-hidden">
+      {/* Background Mesh */}
+      <div className="absolute inset-0 opacity-[0.08] pointer-events-none bg-[url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png')] bg-repeat z-0" />
+      <div className="mesh-bg opacity-30" />
 
       {/* Header */}
-      <div className="h-16 px-4 border-b border-white/[0.05] flex items-center justify-between bg-[#202c33]/90 backdrop-blur-3xl z-30">
-        <div className="flex items-center gap-3 cursor-pointer group">
+      <div className="h-20 px-6 border-b border-white/[0.05] flex items-center justify-between bg-[#0B0E11]/80 backdrop-blur-xl z-30">
+        <div className="flex items-center gap-4 cursor-pointer group">
           <div className="relative">
-             <img 
-               src={activeChat?.isGroup ? activeChat.groupMetadata?.photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${activeChat.groupMetadata?.name}` : otherParticipant?.photoURL} 
-               alt="Chat" 
-               className="w-10 h-10 rounded-full object-cover border border-white/5"
-             />
+             <div className="p-1 rounded-2xl bg-gradient-to-tr from-emerald-500/20 to-transparent">
+               <img 
+                 src={activeChat?.isGroup ? activeChat.groupMetadata?.photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${activeChat.groupMetadata?.name}` : otherParticipant?.photoURL} 
+                 alt="Chat" 
+                 className="w-11 h-11 rounded-2xl object-cover border border-white/5 ring-1 ring-white/10"
+               />
+             </div>
              {isOnline && (
-               <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-[#202c33]" />
+               <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-4 border-[#0B0E11]" />
              )}
           </div>
           <div className="flex flex-col">
-            <h3 className="text-white text-sm font-bold tracking-tight">
-              {activeChat?.isGroup ? activeChat.groupMetadata?.name : otherParticipant?.displayName}
-            </h3>
-            <span className={cn("text-[10px] font-medium", isOnline || isTyping ? "text-green-500" : "text-white/40")}>
-              {isTyping ? 'typing...' : (isOnline ? 'online' : (otherParticipant?.lastSeen ? `last seen ${formatTime(otherParticipant?.lastSeen)}` : 'offline'))}
-            </span>
+            <div className="flex items-center gap-2">
+              <h3 className="text-white text-base font-[900] tracking-tight font-display">
+                {activeChat?.isGroup ? activeChat.groupMetadata?.name : otherParticipant?.displayName}
+              </h3>
+              {activeChat?.isGroup && (
+                <span className="px-1.5 py-0.5 rounded-md bg-white/5 border border-white/10 text-[9px] font-black uppercase tracking-widest text-white/40">Group</span>
+              )}
+            </div>
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className={cn("text-[10px] font-black uppercase tracking-widest font-mono", isOnline || isTyping ? "text-emerald-400" : "text-white/20")}>
+                {isTyping ? 'SIGNAL: TYPING' : (isOnline ? 'SIGNAL: ONLINE' : 'SIGNAL: OFFLINE')}
+              </span>
+              {!isOnline && otherParticipant?.lastSeen && (
+                <span className="text-[10px] font-bold text-white/10 font-mono">
+                  [{formatTime(otherParticipant?.lastSeen)}]
+                </span>
+              )}
+            </div>
           </div>
         </div>
         
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-1.5">
+          <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 bg-white/5 border border-white/10 rounded-2xl mr-4">
+             <div className="flex flex-col items-end">
+                <span className="text-[9px] font-black text-white/30 uppercase tracking-widest">Latency</span>
+                <span className="text-[10px] font-mono text-emerald-500">24ms</span>
+             </div>
+             <div className="w-[1px] h-6 bg-white/10 mx-1" />
+             <div className="flex flex-col items-end">
+                <span className="text-[9px] font-black text-white/30 uppercase tracking-widest">Secure</span>
+                <span className="text-[10px] font-mono text-white/60">E2EE</span>
+             </div>
+          </div>
+
           <button 
-            onClick={fetchAiAssistance} 
-            disabled={isAiLoading}
-            className={cn(
-              "flex items-center gap-2 py-1.5 px-3 transition-all rounded-xl",
-              isAiLoading ? "bg-green-500/20 text-green-500 animate-pulse" : "bg-black/5 dark:bg-white/5 text-white/40 hover:text-white hover:bg-white/10"
-            )}
-            title="Nova AI Assistant"
+            onClick={handleSummarize}
+            className="p-2.5 text-white/40 hover:text-emerald-500 hover:bg-emerald-500/10 rounded-2xl transition-all"
+            title="Summarize Protocol"
           >
-            <Wand2 size={18} />
-            <span className="text-[10px] font-black uppercase tracking-widest hidden sm:block">Ask Nova</span>
+            <Clock size={20} />
           </button>
-          <button onClick={() => otherParticipant && startCall(otherParticipant, 'voice')} className="p-2 text-white/40 hover:text-white transition-all"><Phone size={20} /></button>
-          <button onClick={() => otherParticipant && startCall(otherParticipant, 'video')} className="p-2 text-white/40 hover:text-white transition-all"><Video size={20} /></button>
-          <div className="w-[1px] h-6 bg-white/5 mx-2" />
-          <button className="p-2 text-white/40 hover:text-white transition-all"><Search size={20} /></button>
-          <button className="p-2 text-white/40 hover:text-white transition-all"><MoreVertical size={20} /></button>
+          
+          <div className="w-[1px] h-6 bg-white/5 mx-1" />
+
+          <button onClick={() => otherParticipant && startCall(otherParticipant, 'voice')} className="p-2.5 text-white/40 hover:text-emerald-500 hover:bg-emerald-500/10 rounded-2xl transition-all"><Phone size={20} /></button>
+          <button onClick={() => otherParticipant && startCall(otherParticipant, 'video')} className="p-2.5 text-white/40 hover:text-emerald-500 hover:bg-emerald-500/10 rounded-2xl transition-all"><Video size={20} /></button>
+          
+          <div className="w-[1px] h-6 bg-white/5 mx-1" />
+
+          <button className="p-2.5 text-white/40 hover:text-emerald-500 hover:bg-emerald-500/10 rounded-2xl transition-all"><MoreVertical size={20} /></button>
         </div>
       </div>
 
@@ -194,30 +220,24 @@ export default function ChatArea() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
-            className="px-4 py-2 bg-[#0b141a]/80 backdrop-blur-sm z-20"
+            className="px-6 py-4 bg-[#151B21]/95 backdrop-blur-md z-20 border-t border-white/5"
           >
             <div className="max-w-screen-xl mx-auto">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <div className="p-1 bg-green-500/10 rounded-md text-green-500">
-                    < Wand2 size={12} />
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 bg-emerald-500/10 rounded-lg text-emerald-500 ring-1 ring-emerald-500/20">
+                    <Wand2 size={14} />
                   </div>
-                  <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Nova Intelligence</span>
-                  {isAiLoading && (
-                    <motion.div 
-                      animate={{ rotate: 360 }}
-                      transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-                      className="w-3 h-3 border-2 border-green-500/20 border-t-green-500 rounded-full"
-                    />
-                  )}
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-black text-white uppercase tracking-[0.2em]">CORTEX RESPONSE</span>
+                    <span className="text-[9px] font-bold text-white/30 uppercase tracking-widest mt-0.5">Nova Intelligence Protocol</span>
+                  </div>
                 </div>
-                <button 
-                  onClick={handleSummarize}
-                  className="text-[10px] items-center gap-1 flex font-bold text-green-500/60 hover:text-green-500 uppercase tracking-widest transition-colors"
-                >
-                  <Clock size={10} />
-                  Summarize Chat
-                </button>
+                {isAiLoading && (
+                  <div className="flex items-center gap-2 px-2.5 py-1 bg-white/5 rounded-full">
+                     <span className="text-[9px] font-black text-emerald-500 animate-pulse uppercase tracking-widest">Analyzing Content</span>
+                  </div>
+                )}
               </div>
               
               <div className="flex flex-wrap gap-2">
@@ -254,15 +274,15 @@ export default function ChatArea() {
       </AnimatePresence>
 
       {/* Input Area */}
-      <div className="px-4 py-3 bg-[#202c33] z-30 relative">
+      <div className="px-6 py-4 bg-[#0B0E11] z-30 relative border-t border-white/5">
         <AnimatePresence>
             {showActions && <QuickActionPanel onSelect={(type) => alert(`Selected ${type}`)} onClose={() => setShowActions(false)} />}
         </AnimatePresence>
 
-        <div className="max-w-screen-xl mx-auto flex items-center gap-2">
-            <div className="flex items-center gap-1">
-                <button onClick={() => setShowEmoji(!showEmoji)} className="p-2.5 text-white/40 hover:text-white transition-all relative">
-                    <Smile size={24} />
+        <div className="max-w-screen-xl mx-auto flex items-center gap-4">
+            <div className="flex items-center gap-1 bg-white/5 rounded-2xl p-1">
+                <button onClick={() => setShowEmoji(!showEmoji)} className="p-2 text-white/40 hover:text-emerald-500 transition-all relative group">
+                    <Smile size={24} className="group-hover:scale-110 transition-transform" />
                     {showEmoji && (
                         <div className="absolute bottom-16 left-0 z-50">
                            <EmojiPicker 
@@ -274,38 +294,38 @@ export default function ChatArea() {
                         </div>
                     )}
                 </button>
-                <button onClick={() => setShowActions(!showActions)} className="p-2.5 text-white/40 hover:text-white transition-all">
-                    <Paperclip size={24} />
+                <button onClick={() => setShowActions(!showActions)} className="p-2 text-white/40 hover:text-emerald-500 transition-all group">
+                    <Plus size={24} className={cn("group-hover:scale-110 transition-transform", showActions && "rotate-45")} />
                 </button>
             </div>
 
-            <form onSubmit={handleSend} className="flex-1 relative">
+            <form onSubmit={handleSend} className="flex-1 relative group">
                 <input 
                     type="text" 
-                    placeholder="Type a message"
+                    placeholder="Commence transmission..."
                     value={inputText}
                     onChange={(e) => {
                         setInputText(e.target.value);
                         setTyping(e.target.value.length > 0);
                     }}
-                    className="w-full bg-[#2a3942] rounded-[0.8rem] py-2.5 px-4 pr-12 text-sm focus:outline-none text-white placeholder-white/20"
+                    className="w-full bg-[#151B21] border border-white/5 rounded-2xl py-3.5 px-6 pr-14 text-sm focus:outline-none focus:border-emerald-500/50 text-white placeholder-white/20 transition-all shadow-inner"
                 />
                 <AnimatePresence>
                   {inputText.length > 5 && (
                     <motion.button
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.8 }}
+                      initial={{ opacity: 0, scale: 0.8, x: 10 }}
+                      animate={{ opacity: 1, scale: 1, x: 0 }}
+                      exit={{ opacity: 0, scale: 0.8, x: 10 }}
                       type="button"
                       onClick={handlePolish}
                       disabled={isPolishing}
                       className={cn(
-                        "absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-all",
-                        isPolishing ? "text-green-500 animate-pulse" : "text-white/20 hover:text-green-500 hover:bg-white/5"
+                        "absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-xl transition-all",
+                        isPolishing ? "bg-emerald-500/20 text-emerald-500 animate-pulse" : "text-white/20 hover:text-emerald-500 hover:bg-emerald-500/10"
                       )}
                       title="Polish with Nova"
                     >
-                      <Sparkles size={16} />
+                      <Sparkles size={18} />
                     </motion.button>
                   )}
                 </AnimatePresence>
@@ -313,15 +333,17 @@ export default function ChatArea() {
 
             <div className="flex items-center gap-1">
                 {inputText.trim() ? (
-                    <button 
+                    <motion.button 
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
                         onClick={() => handleSend()}
-                        className="w-12 h-12 rounded-full bg-green-500 text-black flex items-center justify-center hover:bg-green-400 transition-all active:scale-95 shadow-lg"
+                        className="w-12 h-12 rounded-[1.2rem] bg-emerald-500 text-black flex items-center justify-center hover:bg-emerald-400 transition-all active:scale-95 shadow-[0_0_15px_rgba(16,185,129,0.3)]"
                     >
                         <Send size={20} />
-                    </button>
+                    </motion.button>
                 ) : (
-                    <button className="w-12 h-12 rounded-full text-white/40 hover:text-white flex items-center justify-center transition-all">
-                        <Mic size={24} />
+                    <button className="w-12 h-12 rounded-[1.2rem] bg-white/5 text-white/40 hover:text-white flex items-center justify-center transition-all group">
+                        <Mic size={24} className="group-hover:scale-110 transition-transform" />
                     </button>
                 )}
             </div>

@@ -9,7 +9,7 @@ import GhostModeMenu from '../Ghost/GhostModeMenu';
 import SmartControls from '../Chat/SmartControls';
 import CallOverlay from '../Call/CallOverlay';
 import AddContactModal from '../Chat/AddContactModal';
-import { Ghost, ShieldCheck, Users, MessageSquare, Phone, CircleDot, Plus, Zap, Search, Bookmark } from 'lucide-react';
+import { Ghost, ShieldCheck, Users, MessageSquare, Phone, CircleDot, Plus, Zap, Search, Bookmark, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../../lib/utils';
 
@@ -29,23 +29,23 @@ export default function MainLayout() {
   };
 
   return (
-    <div className="flex h-screen w-full relative bg-white dark:bg-[#0b141a] p-3 gap-3 overflow-hidden font-sans antialiased text-black dark:text-white transition-colors duration-300">
-      <div className="mesh-bg opacity-40 select-none pointer-events-none" />
+    <div className="flex h-screen w-full relative bg-[#0B0E11] p-6 gap-6 overflow-hidden font-sans antialiased text-white transition-colors duration-300">
+      <div className="mesh-bg opacity-30 select-none pointer-events-none" />
       
       <AnimatePresence>
         {toast && (
           <motion.div
             initial={{ opacity: 0, y: -50, x: '-50%' }}
-            animate={{ opacity: 1, y: 20, x: '-50%' }}
+            animate={{ opacity: 1, y: 30, x: '-50%' }}
             exit={{ opacity: 0, y: -50, x: '-50%' }}
             className={cn(
-              "fixed top-0 left-1/2 z-[1000] px-6 py-3 rounded-2xl shadow-2xl font-bold text-sm flex items-center gap-3 backdrop-blur-xl border",
+              "fixed top-0 left-1/2 z-[1000] px-8 py-4 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] font-black text-xs uppercase tracking-[0.2em] flex items-center gap-4 backdrop-blur-3xl border",
               toast.type === 'success' 
-                ? "bg-green-600/90 border-green-500/50 text-white" 
+                ? "bg-emerald-600/90 border-emerald-500/50 text-white" 
                 : "bg-red-600/90 border-red-500/50 text-white"
             )}
           >
-            <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
+            <div className="w-2 h-2 rounded-full bg-white animate-pulse shadow-[0_0_8px_white]" />
             {toast.message}
           </motion.div>
         )}
@@ -54,7 +54,7 @@ export default function MainLayout() {
       <AppSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
       {/* 2. Middle Panel (Chats, List, etc.) */}
-      <div className="w-[340px] lg:w-[400px] flex flex-col glass rounded-[1.5rem] overflow-hidden z-10 border border-black/[0.05] dark:border-white/[0.05] shadow-2xl relative">
+      <div className="w-[360px] lg:w-[420px] flex flex-col glass rounded-[2.8rem] overflow-hidden z-10 border border-white/[0.05] shadow-[0_30px_100px_rgba(0,0,0,0.4)] relative">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
@@ -196,7 +196,7 @@ export default function MainLayout() {
       </div>
 
       {/* 3. Main Display Area (Chat or Settings) */}
-      <div className="flex-1 flex flex-col glass rounded-[2.5rem] overflow-hidden z-10 border border-white/[0.08] shadow-2xl relative">
+      <div className="flex-1 flex flex-col bg-[#0B0E11]/40 border border-white/[0.05] rounded-[3.2rem] overflow-hidden z-10 shadow-2xl relative">
         <AnimatePresence mode="wait">
           {activeTab === 'settings' ? (
             <motion.div 
@@ -220,23 +220,27 @@ export default function MainLayout() {
                initial={{ opacity: 0, scale: 0.95 }}
                animate={{ opacity: 1, scale: 1 }}
                exit={{ opacity: 0, scale: 0.95 }}
-               className="h-full w-full flex flex-col items-center justify-center text-center p-12 bg-white/[0.01] relative overflow-hidden"
+               className="h-full w-full flex flex-col items-center justify-center text-center p-12 bg-transparent relative overflow-hidden"
             >
-               <div className="absolute inset-0 bg-gradient-to-b from-green-600/[0.02] to-transparent pointer-events-none" />
+               <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/[0.03] to-transparent pointer-events-none" />
                
                <motion.div
                  initial={{ opacity: 0, scale: 0.8 }}
                  animate={{ opacity: 1, scale: 1 }}
                  transition={{ 
-                   duration: 2,
+                   duration: 3,
                    repeat: Infinity,
                    repeatType: "reverse"
                  }}
-                 className="relative mb-12"
+                 className="relative mb-16"
                >
-                 <div className="absolute inset-0 bg-green-600 rounded-[3.5rem] blur-3xl opacity-10" />
-                 <div className="w-32 h-32 rounded-[3.5rem] bg-gradient-to-tr from-green-600 to-emerald-600 flex items-center justify-center text-white shadow-2xl relative z-10 border border-white/20">
-                   <ShieldCheck size={64} />
+                 <div className="absolute inset-0 bg-emerald-500 rounded-[4rem] blur-[100px] opacity-10 animate-pulse" />
+                 <div className="w-40 h-40 rounded-[4rem] bg-gradient-to-tr from-emerald-600 to-green-500 flex items-center justify-center text-black shadow-[0_0_50px_rgba(16,185,129,0.2)] relative z-10 border border-white/20">
+                   <ShieldCheck size={80} strokeWidth={1.5} />
+                 </div>
+                 
+                 <div className="absolute -top-4 -right-4 w-12 h-12 rounded-2xl bg-[#0B0E11] border border-white/5 flex items-center justify-center text-emerald-500 shadow-xl">
+                    <Zap size={24} />
                  </div>
                </motion.div>
 
@@ -246,32 +250,34 @@ export default function MainLayout() {
                  transition={{ delay: 0.2 }}
                  className="relative z-10"
                >
-                 <h2 className="text-4xl font-black text-white tracking-tighter mb-4">Chattrix Core Online</h2>
-                 <p className="text-white/30 text-sm font-bold uppercase tracking-[0.3em] max-w-sm mx-auto leading-relaxed mb-12">
-                   Start chatting with your contacts via the secure crypt channel.
+                 <h2 className="text-5xl font-[900] text-white tracking-tighter mb-6 font-display">CHATTRIX CORE</h2>
+                 <p className="text-white/20 text-xs font-black uppercase tracking-[0.4em] max-w-sm mx-auto leading-relaxed mb-16">
+                   Establish a secure crypt-link via the global neural network.
                  </p>
                  
                  <button 
-                   onClick={() => {
-                       const email = prompt("Enter user email to chat with:");
-                       if (email) startNewChat(email);
-                   }}
-                   className="group relative px-10 py-5 bg-green-600 hover:bg-green-500 text-white rounded-[2rem] font-black text-sm transition-all shadow-2xl shadow-green-600/30 active:scale-95 flex items-center gap-4 mx-auto"
+                   onClick={() => setShowAddContact(true)}
+                   className="group relative px-12 py-6 bg-emerald-600 hover:bg-emerald-500 text-white rounded-[2.5rem] font-black text-sm uppercase tracking-widest transition-all shadow-[0_20px_50px_rgba(16,185,129,0.2)] active:scale-95 flex items-center gap-4 mx-auto overflow-hidden"
                  >
-                   <Plus size={24} className="group-hover:rotate-90 transition-transform" />
-                   New Chat
-                   <Zap size={18} className="text-green-200 animate-pulse" />
+                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                   <Plus size={24} className="group-hover:rotate-90 transition-transform duration-500" />
+                   Initiate Sync
+                   <Sparkles size={18} className="text-emerald-200" />
                  </button>
                </motion.div>
                
-               <div className="absolute bottom-12 flex items-center gap-8 text-[10px] font-black uppercase tracking-[0.3em] text-white/10 select-none">
-                  <div className="flex items-center gap-2">
-                     <Zap size={14} className="text-green-500" />
-                     <span>Neural Engine v2.4</span>
+               <div className="absolute bottom-16 flex items-center gap-12 text-[9px] font-black uppercase tracking-[0.4em] text-white/10 select-none font-mono">
+                  <div className="flex items-center gap-3">
+                     <div className="w-1 h-1 bg-emerald-500 rounded-full animate-ping" />
+                     <span>SYSTEM: ONLINE</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                     <Ghost size={14} className="text-green-500" />
-                     <span>Ghost Protocol Active</span>
+                  <div className="flex items-center gap-3">
+                     <div className="w-1 h-1 bg-emerald-500 rounded-full animate-ping delay-300" />
+                     <span>SECURE: E2EE</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                     <div className="w-1 h-1 bg-emerald-500 rounded-full animate-ping delay-700" />
+                     <span>ENCRYPTION: AES-256</span>
                   </div>
                </div>
             </motion.div>
