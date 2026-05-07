@@ -107,20 +107,20 @@ export default function ChatSidebar({ onGhostClick }: ChatSidebarProps) {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={handleNovaClick}
-            className="w-full relative overflow-hidden bg-[#151B21] border border-emerald-500/20 rounded-[1.8rem] p-5 flex items-center gap-4 text-left group transition-all shadow-xl"
+            className="w-full relative overflow-hidden bg-gray-50 dark:bg-[#151B21] border border-black/5 dark:border-emerald-500/20 rounded-[1.8rem] p-5 flex items-center gap-4 text-left group transition-all shadow-xl"
           >
             <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-20 transition-opacity">
-              <Sparkles size={80} />
+              <Sparkles size={80} className="text-black dark:text-white" />
             </div>
             <div className="w-14 h-14 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform relative z-10">
               <Wand2 size={28} />
             </div>
             <div className="relative z-10">
-              <p className="text-sm font-black text-white leading-tight flex items-center gap-2">
+              <p className="text-sm font-black text-black dark:text-white leading-tight flex items-center gap-2">
                 Talk to Nova AI
                 <span className="inline-flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
               </p>
-              <p className="text-[10px] uppercase font-bold text-white/30 tracking-[0.15em] mt-1.5 line-clamp-1">Personal Assistant Protocol Active</p>
+              <p className="text-[10px] uppercase font-bold text-black/30 dark:text-white/30 tracking-[0.15em] mt-1.5 line-clamp-1">Personal Assistant Protocol Active</p>
             </div>
           </motion.button>
         </div>
@@ -135,8 +135,8 @@ export default function ChatSidebar({ onGhostClick }: ChatSidebarProps) {
                className={cn(
                   "px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase transition-all whitespace-nowrap",
                   filter === f.id 
-                    ? "bg-green-600/20 text-green-500 border border-green-500/20" 
-                    : "bg-white/[0.03] text-white/30 border border-transparent hover:bg-white/[0.05]"
+                    ? "bg-green-600/20 text-green-600 dark:text-green-400 border border-green-600/20 dark:border-green-400/20" 
+                    : "bg-black/5 dark:bg-white/[0.03] text-black/40 dark:text-white/30 border border-transparent hover:bg-black/10 dark:hover:bg-white/[0.05]"
                )}
             >
                {f.label}
@@ -147,10 +147,10 @@ export default function ChatSidebar({ onGhostClick }: ChatSidebarProps) {
       {/* Chat List */}
       <div className="flex-1 overflow-y-auto no-scrollbar px-3 pt-2 space-y-1.5 pb-24 relative">
         <div className="flex items-center justify-between px-2 mb-2">
-          <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">Active Transmissions</h3>
+          <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-black/20 dark:text-white/20">Active Transmissions</h3>
           <button 
             onClick={() => setShowAddContact(true)}
-            className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-emerald-500 hover:text-emerald-400 transition-colors"
+            className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-500 hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors"
           >
             <UserPlus size={10} />
             Invite Friends
@@ -181,14 +181,14 @@ export default function ChatSidebar({ onGhostClick }: ChatSidebarProps) {
                 )}>
                   {/* Avatar with Ring */}
                   <div className="relative shrink-0">
-                    <div className={cn(
+                   <div className={cn(
                         "p-[2px] rounded-full",
                         isOnline ? "bg-gradient-to-tr from-green-500 to-emerald-400" : "bg-black/5 dark:bg-white/5"
                     )}>
                         <img 
                             src={chat.isGroup ? chat.groupMetadata?.photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${chat.groupMetadata?.name}` : otherParticipant?.photoURL} 
                             alt="Chat" 
-                            className="w-12 h-12 rounded-full border border-[#0b141a] object-cover group-hover:scale-105 transition-transform"
+                            className="w-12 h-12 rounded-full border border-white dark:border-[#0b141a] object-cover group-hover:scale-105 transition-transform"
                         />
                     </div>
                   </div>
@@ -253,17 +253,17 @@ export default function ChatSidebar({ onGhostClick }: ChatSidebarProps) {
            whileHover={{ scale: 1.02, y: -2 }}
            whileTap={{ scale: 0.98 }}
            onClick={() => setShowProfile(true)}
-           className="w-full bg-[#151B21] border border-white/5 rounded-3xl p-3 flex items-center gap-4 shadow-2xl backdrop-blur-xl"
+           className="w-full bg-white dark:bg-[#151B21] border border-black/5 dark:border-white/5 rounded-3xl p-3 flex items-center gap-4 shadow-2xl backdrop-blur-xl"
         >
           <div className="relative">
-            <img src={currentUser?.photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${currentUser?.displayName}`} alt="Profile" className="w-10 h-10 rounded-2xl object-cover border border-white/10" />
-            <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-[#151B21] rounded-full" />
+            <img src={currentUser?.photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${currentUser?.displayName}`} alt="Profile" className="w-10 h-10 rounded-2xl object-cover border border-black/10 dark:border-white/10" />
+            <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-white dark:border-[#151B21] rounded-full" />
           </div>
           <div className="text-left flex-1">
-            <p className="text-xs font-black text-white truncate">{currentUser?.displayName}</p>
-            <p className="text-[10px] font-bold text-white/30 tracking-wider">Operational Commander</p>
+            <p className="text-xs font-black text-black dark:text-white truncate">{currentUser?.displayName}</p>
+            <p className="text-[10px] font-bold text-black/30 dark:text-white/30 tracking-wider">Operational Commander</p>
           </div>
-          <div className="p-2.5 bg-white/5 rounded-2xl text-white/40">
+          <div className="p-2.5 bg-black/5 dark:bg-white/5 rounded-2xl text-black/40 dark:text-white/40">
             <MoreVertical size={16} />
           </div>
         </motion.button>

@@ -7,7 +7,7 @@ export async function getAIAssistance(messages: { sender: string, text: string }
     const chatHistory = messages.map(m => `${m.sender}: ${m.text}`).join('\n');
     
     const response = await ai.models.generateContent({
-      model: "gemini-1.5-flash",
+      model: "gemini-3-flash-preview",
       contents: `You are Nova, an intelligent AI assistant integrated inside the Chattrix messaging app.
 
 -------------------------
@@ -70,7 +70,7 @@ ${isPersonalChat ?
 export async function translateMessage(text: string, targetLang: string = "Hindi") {
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-1.5-flash",
+      model: "gemini-3-flash-preview",
       contents: `Translate the following chat message to ${targetLang}. 
       Keep the tone natural and informal if the original is informal. 
       Only return the translated text.
@@ -87,7 +87,7 @@ export async function translateMessage(text: string, targetLang: string = "Hindi
 export async function analyzeTone(text: string) {
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-1.5-flash",
+      model: "gemini-3-flash-preview",
       contents: `Analyze the tone of this chat message. 
       Respond with exactly one word from this list: Friendly, Professional, Angry, Sad, Sarcastic, Excited, Neutral, Flirty, Urgent.
       
@@ -109,7 +109,7 @@ export async function summarizeChat(messages: { sender: string, text: string }[]
   try {
     const chatHistory = messages.map(m => `${m.sender}: ${m.text}`).join('\n');
     const response = await ai.models.generateContent({
-      model: "gemini-1.5-flash",
+      model: "gemini-3-flash-preview",
       contents: `Summarize the following chat conversation into a concise bulleted list:\n\n${chatHistory}`,
     });
 
@@ -123,7 +123,7 @@ export async function summarizeChat(messages: { sender: string, text: string }[]
 export async function polishMessage(text: string) {
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-1.5-flash",
+      model: "gemini-3-flash-preview",
       contents: `Improve this chat message to make it sound more natural, polite, and clear. 
       Do not change the original meaning. Return ONLY the improved text.
       

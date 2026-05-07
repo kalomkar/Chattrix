@@ -19,6 +19,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
       if (fbUser) {
+        // If logged in with email, check if verified
+        if (fbUser.email && !fbUser.emailVerified && !fbUser.phoneNumber) {
+          setCurrentUser(null);
+          setLoading(false);
+          return;
+        }
+
         const userDoc = await getDoc(doc(db, 'users', fbUser.uid));
         if (userDoc.exists()) {
           const userData = userDoc.data() as User;

@@ -29,7 +29,7 @@ export default function MainLayout() {
   };
 
   return (
-    <div className="flex h-screen w-full relative bg-[#0B0E11] p-6 gap-6 overflow-hidden font-sans antialiased text-white transition-colors duration-300">
+    <div className="flex h-screen w-full relative bg-gray-50 dark:bg-[#0B0E11] p-6 gap-6 overflow-hidden font-sans antialiased text-black dark:text-white transition-colors duration-300">
       <div className="mesh-bg opacity-30 select-none pointer-events-none" />
       
       <AnimatePresence>
@@ -54,7 +54,7 @@ export default function MainLayout() {
       <AppSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
       {/* 2. Middle Panel (Chats, List, etc.) */}
-      <div className="w-[360px] lg:w-[420px] flex flex-col glass rounded-[2.8rem] overflow-hidden z-10 border border-white/[0.05] shadow-[0_30px_100px_rgba(0,0,0,0.4)] relative">
+      <div className="w-[360px] lg:w-[420px] flex flex-col glass rounded-[2.8rem] overflow-hidden z-10 border border-black/5 dark:border-white/[0.05] shadow-[0_30px_100px_rgba(0,0,0,0.4)] relative">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
@@ -68,7 +68,7 @@ export default function MainLayout() {
             
             {activeTab === 'contacts' && (
                <div className="flex-1 flex flex-col">
-                  <div className="p-6 border-b border-white/5 flex items-center justify-between">
+                  <div className="p-6 border-b border-black/5 dark:border-white/5 flex items-center justify-between">
                      <div>
                         <h2 className="text-xl font-black tracking-tight text-black dark:text-white">Contacts</h2>
                         <p className="text-[10px] uppercase font-bold text-black/30 dark:text-white/30 tracking-widest leading-none mt-1">Verified Chattrix Directory</p>
@@ -99,23 +99,23 @@ export default function MainLayout() {
                                  startNewChat(contact.email);
                                  setActiveTab('chats');
                               }}
-                              className="flex items-center gap-4 p-4 rounded-[1.8rem] hover:bg-white/[0.05] border border-transparent hover:border-white/5 transition-all cursor-pointer group"
+                              className="flex items-center gap-4 p-4 rounded-[1.8rem] hover:bg-black/5 dark:hover:bg-white/[0.05] border border-transparent hover:border-black/5 dark:hover:border-white/5 transition-all cursor-pointer group"
                            >
                               <div className="relative">
                                  <img src={contact.photoURL} className="w-12 h-12 rounded-[1rem] object-cover border border-white/10 group-hover:scale-105 transition-transform" alt={contact.displayName} />
                                  <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-[#0a0a0f]" />
                               </div>
                               <div className="flex-1 min-w-0">
-                                 <p className="text-sm font-black tracking-tight group-hover:text-blue-400 transition-colors">{contact.displayName}</p>
-                                 <p className="text-[10px] text-white/20 font-bold tracking-widest uppercase truncate">{contact.email}</p>
+                                 <p className="text-sm font-black tracking-tight group-hover:text-emerald-500 transition-colors text-black dark:text-white">{contact.displayName}</p>
+                                 <p className="text-[10px] text-black/20 dark:text-white/20 font-bold tracking-widest uppercase truncate">{contact.email}</p>
                               </div>
-                              <button className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-white/20 hover:text-white hover:bg-white/10 transition-all opacity-0 group-hover:opacity-100">
+                              <button className="w-8 h-8 rounded-full bg-black/5 dark:bg-white/5 flex items-center justify-center text-black/20 dark:text-white/20 hover:text-black dark:hover:text-white hover:bg-black/10 dark:hover:bg-white/10 transition-all opacity-0 group-hover:opacity-100">
                                  <MessageSquare size={14} />
                               </button>
                            </div>
                         ))
                      ) : (
-                        <div className="flex-1 flex flex-col items-center justify-center p-12 text-center text-white/10 select-none">
+                        <div className="flex-1 flex flex-col items-center justify-center p-12 text-center text-black/10 dark:text-white/10 select-none">
                            <Users size={64} className="mb-6 opacity-5" />
                            <p className="text-xs font-black uppercase tracking-[0.2em] mb-2">Network directory is empty</p>
                            <button 
@@ -132,11 +132,11 @@ export default function MainLayout() {
 
             {activeTab === 'status' && (
               <div className="flex-1 flex flex-col">
-                  <div className="p-6 border-b border-white/5">
+                  <div className="p-6 border-b border-black/5 dark:border-white/5">
                      <h2 className="text-xl font-black tracking-tight text-black dark:text-white">Status</h2>
                      <p className="text-[10px] uppercase font-bold text-black/30 dark:text-white/30 tracking-widest leading-none mt-1">Ephemeral Chattrix Updates</p>
                   </div>
-                  <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-white/20">
+                  <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-black/20 dark:text-white/20">
                      <CircleDot size={48} className="text-emerald-400 mb-4 opacity-20" />
                      <p className="text-[10px] font-bold uppercase tracking-widest">No active stories available</p>
                   </div>
@@ -145,11 +145,11 @@ export default function MainLayout() {
 
             {activeTab === 'calls' && (
               <div className="flex-1 flex flex-col">
-                  <div className="p-6 border-b border-white/5">
+                  <div className="p-6 border-b border-black/5 dark:border-white/5">
                      <h2 className="text-xl font-bold tracking-tight text-black dark:text-white">Recent Calls</h2>
                      <p className="text-[10px] uppercase font-bold text-black/30 dark:text-white/30 tracking-widest leading-none mt-1">Encrypted Call History</p>
                   </div>
-                  <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-white/20">
+                  <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-black/20 dark:text-white/20">
                      <Phone size={48} className="text-cyan-400 mb-4 opacity-20" />
                      <p className="text-[10px] font-bold uppercase tracking-widest">Secure log is empty</p>
                   </div>
@@ -158,11 +158,11 @@ export default function MainLayout() {
 
             {activeTab === 'groups' && (
               <div className="flex-1 flex flex-col">
-                  <div className="p-6 border-b border-white/5">
-                     <h2 className="text-xl font-bold tracking-tight">Groups</h2>
-                     <p className="text-[10px] uppercase font-bold text-white/30 tracking-widest leading-none mt-1">Chattrix Community Clusters</p>
+                  <div className="p-6 border-b border-black/5 dark:border-white/5">
+                     <h2 className="text-xl font-bold tracking-tight text-black dark:text-white">Groups</h2>
+                     <p className="text-[10px] uppercase font-bold text-black/30 dark:text-white/30 tracking-widest leading-none mt-1">Chattrix Community Clusters</p>
                   </div>
-                  <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-white/20">
+                  <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-black/20 dark:text-white/20">
                      <Users size={48} className="text-green-500 mb-4 opacity-20" />
                      <p className="text-[10px] font-bold uppercase tracking-widest">No active groups</p>
                   </div>
@@ -171,11 +171,11 @@ export default function MainLayout() {
 
             {activeTab === 'saved' && (
               <div className="flex-1 flex flex-col">
-                  <div className="p-6 border-b border-white/5">
-                     <h2 className="text-xl font-bold tracking-tight">Saved</h2>
-                     <p className="text-[10px] uppercase font-bold text-white/30 tracking-widest leading-none mt-1">Personal Archive</p>
+                  <div className="p-6 border-b border-black/5 dark:border-white/5">
+                     <h2 className="text-xl font-bold tracking-tight text-black dark:text-white">Saved</h2>
+                     <p className="text-[10px] uppercase font-bold text-black/30 dark:text-white/30 tracking-widest leading-none mt-1">Personal Archive</p>
                   </div>
-                  <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-white/20">
+                  <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-black/20 dark:text-white/20">
                      <Bookmark size={48} className="text-yellow-500 mb-4 opacity-20" />
                      <p className="text-[10px] font-bold uppercase tracking-widest">Archive is empty</p>
                   </div>
@@ -196,7 +196,7 @@ export default function MainLayout() {
       </div>
 
       {/* 3. Main Display Area (Chat or Settings) */}
-      <div className="flex-1 flex flex-col bg-[#0B0E11]/40 border border-white/[0.05] rounded-[3.2rem] overflow-hidden z-10 shadow-2xl relative">
+      <div className="flex-1 flex flex-col bg-white/40 dark:bg-[#0B0E11]/40 border border-black/5 dark:border-white/[0.05] rounded-[3.2rem] overflow-hidden z-10 shadow-2xl relative">
         <AnimatePresence mode="wait">
           {activeTab === 'settings' ? (
             <motion.div 
@@ -239,7 +239,7 @@ export default function MainLayout() {
                    <ShieldCheck size={80} strokeWidth={1.5} />
                  </div>
                  
-                 <div className="absolute -top-4 -right-4 w-12 h-12 rounded-2xl bg-[#0B0E11] border border-white/5 flex items-center justify-center text-emerald-500 shadow-xl">
+                 <div className="absolute -top-4 -right-4 w-12 h-12 rounded-2xl bg-white dark:bg-[#0B0E11] border border-black/5 dark:border-white/5 flex items-center justify-center text-emerald-500 shadow-xl">
                     <Zap size={24} />
                  </div>
                </motion.div>
@@ -250,8 +250,8 @@ export default function MainLayout() {
                  transition={{ delay: 0.2 }}
                  className="relative z-10"
                >
-                 <h2 className="text-5xl font-[900] text-white tracking-tighter mb-6 font-display">CHATTRIX CORE</h2>
-                 <p className="text-white/20 text-xs font-black uppercase tracking-[0.4em] max-w-sm mx-auto leading-relaxed mb-16">
+                 <h2 className="text-5xl font-[900] text-black dark:text-white tracking-tighter mb-6 font-display">CHATTRIX CORE</h2>
+                 <p className="text-black/20 dark:text-white/20 text-xs font-black uppercase tracking-[0.4em] max-w-sm mx-auto leading-relaxed mb-16">
                    Establish a secure crypt-link via the global neural network.
                  </p>
                  
@@ -266,7 +266,7 @@ export default function MainLayout() {
                  </button>
                </motion.div>
                
-               <div className="absolute bottom-16 flex items-center gap-12 text-[9px] font-black uppercase tracking-[0.4em] text-white/10 select-none font-mono">
+               <div className="absolute bottom-16 flex items-center gap-12 text-[9px] font-black uppercase tracking-[0.4em] text-black/10 dark:text-white/10 select-none font-mono">
                   <div className="flex items-center gap-3">
                      <div className="w-1 h-1 bg-emerald-500 rounded-full animate-ping" />
                      <span>SYSTEM: ONLINE</span>

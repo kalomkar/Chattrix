@@ -56,9 +56,9 @@ export default function MessageItem({ message, isFirstInSequence }: MessageItemP
   const StatusIcon = () => {
     if (!isMine) return null;
     switch (message.status) {
-      case 'sent': return <Check size={14} className="text-[#8696a0]" />;
-      case 'delivered': return <div className="flex -space-x-2"><Check size={14} className="text-[#8696a0]" /><Check size={14} className="text-[#8696a0]" /></div>;
-      case 'seen': return <div className="flex -space-x-2"><Check size={14} className="text-[#53bdeb]" /><Check size={14} className="text-[#53bdeb]" /></div>;
+      case 'sent': return <Check size={14} className="text-black/30 dark:text-white/30" />;
+      case 'delivered': return <div className="flex -space-x-2"><Check size={14} className="text-black/30 dark:text-white/30" /><Check size={14} className="text-black/30 dark:text-white/30" /></div>;
+      case 'seen': return <div className="flex -space-x-2"><Check size={14} className="text-blue-400 dark:text-[#53bdeb]" /><Check size={14} className="text-blue-400 dark:text-[#53bdeb]" /></div>;
       default: return null;
     }
   };
@@ -81,7 +81,7 @@ export default function MessageItem({ message, isFirstInSequence }: MessageItemP
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
             className={cn(
-              "absolute top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-2 py-1 bg-[#151B21] border border-white/10 rounded-full shadow-2xl z-20 backdrop-blur-md",
+              "absolute top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-2 py-1 bg-white dark:bg-[#151B21] border border-black/10 dark:border-white/10 rounded-full shadow-2xl z-20 backdrop-blur-md",
               isMine ? "right-full mr-3 flex-row-reverse" : "left-full ml-3"
             )}
           >
@@ -89,8 +89,8 @@ export default function MessageItem({ message, isFirstInSequence }: MessageItemP
               onClick={handleTranslate}
               disabled={isTranslating}
               className={cn(
-                "p-1.5 rounded-full hover:bg-white/10 transition-colors",
-                isTranslating ? "text-green-500 animate-spin" : "text-white/60",
+                "p-1.5 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors",
+                isTranslating ? "text-green-500 animate-spin" : "text-black/60 dark:text-white/60",
                 translatedText && "text-green-500"
               )}
               title="Translate with Nova"
@@ -101,8 +101,8 @@ export default function MessageItem({ message, isFirstInSequence }: MessageItemP
               onClick={handleAnalyzeTone}
               disabled={isAnalyzingTone}
               className={cn(
-                "p-1.5 rounded-full hover:bg-white/10 transition-colors",
-                isAnalyzingTone ? "text-blue-500 animate-pulse" : "text-white/60",
+                "p-1.5 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors",
+                isAnalyzingTone ? "text-blue-500 animate-pulse" : "text-black/60 dark:text-white/60",
                 tone && "text-blue-400"
               )}
               title="Analyze Mood"
@@ -116,8 +116,8 @@ export default function MessageItem({ message, isFirstInSequence }: MessageItemP
       <div className={cn(
         "max-w-[85%] sm:max-w-[70%] relative px-4 py-2.5 flex flex-col transition-all border",
         isMine 
-          ? "bg-[#065F46] text-[#e9edef] rounded-2xl rounded-tr-none border-emerald-500/20 shadow-[0_5px_15px_rgba(6,95,70,0.2)]" 
-          : "bg-[#151B21] text-[#e9edef] rounded-2xl rounded-tl-none border-white/5",
+          ? "bg-emerald-600 dark:bg-emerald-800 text-white dark:text-[#e9edef] border-emerald-500/20 shadow-[0_5px_15px_rgba(6,95,70,0.1)]" 
+          : "bg-gray-100 dark:bg-[#151B21] text-black dark:text-[#e9edef] border-black/5 dark:border-white/5",
         isFirstInSequence ? "mt-4" : "mt-1",
         (translatedText || tone) && "ring-2 ring-emerald-500/30 border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.1)]"
       )}>
@@ -131,19 +131,22 @@ export default function MessageItem({ message, isFirstInSequence }: MessageItemP
             
             <p className={cn(
               "text-[14px] leading-relaxed break-words font-medium",
-              isMine ? "text-white" : "text-white/90"
+              isMine ? "text-white" : "text-black dark:text-white/90"
             )}>
               {translatedText || message.text}
             </p>
 
             {translatedText && (
-              <p className="mt-1.5 pt-1.5 border-t border-white/10 text-[12px] italic text-white/40">
+              <p className={cn(
+                "mt-1.5 pt-1.5 border-t text-[12px] italic",
+                isMine ? "border-white/10 text-white/40" : "border-black/5 dark:border-white/10 text-black/40 dark:text-white/40"
+              )}>
                 Original: {message.text}
               </p>
             )}
 
             <div className="absolute bottom-0 right-0 flex items-center gap-1.5">
-                <span className="text-[9px] text-white/30 font-mono tracking-tighter">
+                <span className="text-[9px] text-black/30 dark:text-white/30 font-mono tracking-tighter">
                     {formatTime(message.timestamp)}
                 </span>
                 {message.disappearing?.enabled && (

@@ -271,7 +271,11 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     if (!currentUser) return;
 
     const handleReceiveMessage = (data: { chatId: string; message: any }) => {
-      // Logic for sound or notifications could go here
+      if (activeChat?.id !== data.chatId) {
+        // Show notification or toast could be handled here if we had access to toast function
+        // For now, let's just log it and maybe we can use a simpler approach or a global event
+        console.log("New message received in background", data);
+      }
     };
 
     const handleUserTyping = (data: { chatId: string; userId: string; isTyping: boolean }) => {

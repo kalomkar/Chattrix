@@ -7,12 +7,30 @@ import { fileURLToPath } from 'url';
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, query, where, getDocs, addDoc } from 'firebase/firestore';
 import fs from 'fs';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Read Firebase config
-const firebaseConfig = JSON.parse(fs.readFileSync(path.join(__dirname, 'firebase-applet-config.json'), 'utf-8'));
+let firebaseConfig: any = {};
+const configPath = path.join(__dirname, 'firebase-applet-config.json');
+
+if (fs.existsSync(configPath)) {
+  firebaseConfig = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+}
+
+const config = {
+  apiKey: process.env.VITE_FIREBASE_API_KEY || firebaseConfig.apiKey,
+  authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN || firebaseConfig.authDomain,
+  projectId: process.env.VITE_FIREBASE_PROJECT_ID || firebaseConfig.projectId,
+  storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET || firebaseConfig.storageBucket,
+  messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID || firebaseConfig.messagingSenderId,
+  appId: process.env.VITE_FIREBASE_APP_ID || firebaseConfig.appId,
+  firestoreDatabaseId: process.env.VITE_FIREBASE_FIRESTORE_DB_ID || firebaseConfig.firestoreDatabaseId
+};
 
 async function startServer() {
   const app = express();
@@ -105,8 +123,8 @@ async function startServer() {
   });
 
   // Backend Firebase Init
-  const firebaseApp = initializeApp(firebaseConfig);
-  const db = getFirestore(firebaseApp, firebaseConfig.firestoreDatabaseId);
+  const firebaseApp = initializeApp(config);
+  const db = getFirestore(firebaseApp, config.firestoreDatabaseId);
 
   // API Routes
   app.post('/api/contact/add', async (req, res) => {

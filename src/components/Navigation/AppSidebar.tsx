@@ -38,12 +38,12 @@ export default function AppSidebar({ activeTab, setActiveTab }: AppSidebarProps)
     <motion.div
       initial={false}
       animate={{ width: isExpanded ? 240 : 88 }}
-      className="h-full bg-[#0B0E11]/80 backdrop-blur-2xl rounded-[2.8rem] border border-white/[0.05] flex flex-col relative z-50 transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] group shadow-[0_30px_100px_rgba(0,0,0,0.5)] overflow-hidden"
+      className="h-full bg-white/80 dark:bg-[#0B0E11]/80 backdrop-blur-2xl rounded-[2.8rem] border border-black/5 dark:border-white/[0.05] flex flex-col relative z-50 transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] group shadow-[0_30px_100px_rgba(0,0,0,0.5)] overflow-hidden"
     >
       {/* Toggle Button */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="absolute bottom-8 right-1/2 translate-x-1/2 w-10 h-10 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-center text-white/40 hover:text-emerald-500 hover:bg-emerald-500/10 transition-all z-50 opacity-0 group-hover:opacity-100"
+        className="absolute bottom-8 right-1/2 translate-x-1/2 w-10 h-10 rounded-2xl bg-black/[0.03] dark:bg-white/[0.03] border border-black/10 dark:border-white/10 flex items-center justify-center text-black/40 dark:text-white/40 hover:text-emerald-500 hover:bg-emerald-500/10 transition-all z-50 opacity-0 group-hover:opacity-100"
       >
         {isExpanded ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
       </button>
@@ -69,7 +69,7 @@ export default function AppSidebar({ activeTab, setActiveTab }: AppSidebarProps)
               animate={{ opacity: 1, x: 0 }}
               className="flex flex-col"
             >
-              <span className="text-white font-[900] tracking-tighter text-2xl leading-none font-display">CHATTRIX</span>
+              <span className="text-black dark:text-white font-[900] tracking-tighter text-2xl leading-none font-display">CHATTRIX</span>
               <span className="text-emerald-500 text-[10px] uppercase font-black tracking-[0.3em] mt-1">AX-7 PROTOCOL</span>
             </motion.div>
           )}
@@ -86,7 +86,7 @@ export default function AppSidebar({ activeTab, setActiveTab }: AppSidebarProps)
                 "w-full flex items-center gap-4 p-4 rounded-2xl transition-all relative overflow-hidden",
                 activeTab === item.id 
                    ? "bg-emerald-600 text-black shadow-[0_10px_30px_rgba(16,185,129,0.3)]" 
-                   : "text-white/30 hover:text-white hover:bg-white/[0.05]"
+                   : "text-black/30 dark:text-white/30 hover:text-black dark:hover:text-white hover:bg-black/[0.05] dark:hover:bg-white/[0.05]"
               )}
             >
               <item.icon size={24} className={cn("shrink-0 transition-transform duration-500", activeTab === item.id && "scale-110")} />
@@ -127,25 +127,29 @@ export default function AppSidebar({ activeTab, setActiveTab }: AppSidebarProps)
            <button 
               onClick={toggleDarkMode}
               className={cn(
-                "w-full flex items-center gap-4 p-4 rounded-2xl text-white/30 hover:text-emerald-500 hover:bg-emerald-500/10 transition-all",
+                "w-full flex items-center gap-4 p-4 rounded-2xl text-black/30 dark:text-white/30 hover:text-emerald-500 hover:bg-emerald-500/10 transition-all",
                 !isExpanded && "justify-center"
               )}
            >
               {isDarkMode ? <Moon size={22} /> : <Sun size={22} />}
               {isExpanded && <span className="text-[10px] font-black uppercase tracking-widest truncate">Cortex Mode</span>}
            </button>
-           <button 
-              onClick={() => setShowSignals(!showSignals)}
-              className={cn(
-                "w-full flex items-center gap-4 p-4 rounded-2xl text-white/30 hover:text-emerald-500 hover:bg-emerald-500/10 transition-all relative",
-                !isExpanded && "justify-center",
-                showSignals && "text-emerald-500 bg-emerald-500/10"
-              )}
-           >
-              <Bell size={22} />
-              {isExpanded && <span className="text-[10px] font-black uppercase tracking-widest truncate">Signals</span>}
-              {showSignals && <SignalsPanel onClose={() => setShowSignals(false)} />}
-           </button>
+           <div className="relative">
+              <button 
+                  onClick={() => setShowSignals(!showSignals)}
+                  className={cn(
+                    "w-full flex items-center gap-4 p-4 rounded-2xl text-black/30 dark:text-white/30 hover:text-emerald-500 hover:bg-emerald-500/10 transition-all",
+                    !isExpanded && "justify-center",
+                    showSignals && "text-emerald-500 bg-emerald-500/10"
+                  )}
+              >
+                  <Bell size={22} />
+                  {isExpanded && <span className="text-[10px] font-black uppercase tracking-widest truncate">Signals</span>}
+              </button>
+              <AnimatePresence>
+                {showSignals && <SignalsPanel onClose={() => setShowSignals(false)} />}
+              </AnimatePresence>
+           </div>
         </div>
 
         <div className={cn(
@@ -155,10 +159,10 @@ export default function AppSidebar({ activeTab, setActiveTab }: AppSidebarProps)
           <div className="relative group/avatar">
             <div className="absolute inset-0 bg-emerald-500 rounded-2xl blur-lg opacity-0 group-hover/avatar:opacity-30 transition-opacity" />
             <img src={currentUser?.photoURL} className="w-12 h-12 rounded-2xl object-cover border border-white/10 relative z-10" alt="Me" />
-            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-4 border-[#0B0E11] rounded-full z-20" />
+            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-4 border-white dark:border-[#0B0E11] rounded-full z-20" />
           </div>
           {isExpanded && (
-            <div className="flex-1 min-w-0 text-white">
+            <div className="flex-1 min-w-0 text-black dark:text-white">
                <p className="text-xs font-[900] truncate tracking-tight">{currentUser?.displayName}</p>
                <p className="text-[9px] font-black text-emerald-500/60 uppercase tracking-[0.2em] truncate">Operator: Verified</p>
             </div>

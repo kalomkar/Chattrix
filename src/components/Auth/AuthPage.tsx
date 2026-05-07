@@ -5,10 +5,11 @@ import {
   updateProfile,
   RecaptchaVerifier,
   signInWithPhoneNumber,
-  ConfirmationResult
+  ConfirmationResult,
+  sendEmailVerification
 } from 'firebase/auth';
 import { auth } from '../../lib/firebase';
-import { MessageCircle, ShieldCheck, Phone, Mail, ChevronLeft, Ghost } from 'lucide-react';
+import { MessageCircle, ShieldCheck, Phone, Mail, ChevronLeft, Ghost, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../../lib/utils';
 
@@ -28,6 +29,7 @@ export default function AuthPage() {
   
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [verificationSent, setVerificationSent] = useState(false);
 
   useEffect(() => {
     // Cleanup recaptcha on unmount
@@ -92,10 +94,16 @@ export default function AuthPage() {
 
     try {
       if (isLogin) {
-        await signInWithEmailAndPassword(auth, email, password);
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        if (!userCredential.user.emailVerified) {
+          setError("Please verify your email before logging in. Check your inbox.");
+          // Optional: allow resend or just keep them logged out
+        }
       } else {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(userCredential.user, { displayName });
+        await sendEmailVerification(userCredential.user);
+        setVerificationSent(true);
       }
     } catch (err: any) {
       setError(err.message);
@@ -143,7 +151,28 @@ export default function AuthPage() {
         </div>
 
         <AnimatePresence mode="wait">
-          {authMethod === 'email' ? (
+          {verificationSent ? (
+            <motion.div
+              key="verification-sent"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-center py-8"
+            >
+              <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <CheckCircle2 className="text-emerald-500 w-8 h-8" />
+              </div>
+              <h2 className="text-xl font-bold text-white mb-2">Verify your email</h2>
+              <p className="text-white/60 text-sm mb-8 px-4">
+                We've sent a confirmation link to <span className="text-white font-bold">{email}</span>. Please click the link to activate your account.
+              </p>
+              <button
+                onClick={() => setVerificationSent(false)}
+                className="text-blue-400 hover:text-blue-300 text-xs font-bold uppercase tracking-widest"
+              >
+                Back to Login
+              </button>
+            </motion.div>
+          ) : authMethod === 'email' ? (
             <motion.form 
               key="email-form"
               initial={{ opacity: 0, x: -20 }}
