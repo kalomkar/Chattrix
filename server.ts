@@ -7,35 +7,81 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 import dotenv from 'dotenv';
 
-import admin from 'firebase-admin';
-import { getFirestore } from 'firebase-admin/firestore';
-
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Read Firebase config
-let firebaseConfig: any = {};
+// Read Firebase config synchronously as early as possible
 const configPath = path.join(__dirname, 'firebase-applet-config.json');
-
+let firebaseConfig: any = {};
 if (fs.existsSync(configPath)) {
   firebaseConfig = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+  const pid = process.env.VITE_FIREBASE_PROJECT_ID || firebaseConfig.projectId;
+  if (pid) {
+    console.log(`[FIREBASE] Setting GOOGLE_CLOUD_PROJECT and FIREBASE_CONFIG to ${pid} before loading Admin SDK`);
+    process.env.GOOGLE_CLOUD_PROJECT = pid;
+    process.env.GCLOUD_PROJECT = pid;
+    process.env.FIREBASE_CONFIG = JSON.stringify({
+      projectId: pid,
+      databaseId: firebaseConfig.firestoreDatabaseId
+    });
+  }
 }
 
-// Initialize Admin SDK
-if (!admin.apps.length) {
-  admin.initializeApp({
-    projectId: process.env.VITE_FIREBASE_PROJECT_ID || firebaseConfig.projectId,
-  });
-}
-
-// In firebase-admin v11.1.0+, you can specify the database ID
-const adminDb = firebaseConfig.firestoreDatabaseId 
-    ? getFirestore(admin.app(), firebaseConfig.firestoreDatabaseId)
-    : getFirestore(admin.app());
+// Declare global variables for Firebase Admin
+let admin: any;
+let getFirestore: any;
+let adminDb: any;
 
 async function startServer() {
+  console.log('[SERVER] Starting initialization bootstrap...');
+  
+  // Dynamic import to ensure process.env was set in the outer scope
+  const adminModule = await import('firebase-admin');
+  admin = adminModule.default;
+  const firestoreModule = await import('firebase-admin/firestore');
+  getFirestore = firestoreModule.getFirestore;
+
+  const adminProjectId = process.env.VITE_FIREBASE_PROJECT_ID || firebaseConfig.projectId;
+  const databaseId = firebaseConfig.firestoreDatabaseId;
+
+  // Initialize Admin SDK
+  let firebaseApp: any;
+  if (admin.apps.length === 0) {
+    console.log(`[FIREBASE] Initializing default Admin app (Project: ${adminProjectId})`);
+    firebaseApp = admin.initializeApp({
+      projectId: adminProjectId,
+    });
+  } else {
+    firebaseApp = admin.app();
+    if (firebaseApp.options.projectId !== adminProjectId && adminProjectId) {
+      console.log(`[FIREBASE] Project ID mismatch. Initializing applet-admin.`);
+      const existing = admin.apps.find((a: any) => a.name === 'applet-admin');
+      firebaseApp = existing || admin.initializeApp({ projectId: adminProjectId }, 'applet-admin');
+    }
+  }
+
+  // Initialize Firestore Admin
+  adminDb = databaseId 
+    ? getFirestore(firebaseApp, databaseId)
+    : getFirestore(firebaseApp);
+
+  console.log(`[FIREBASE] Admin Firestore initialized (Project: ${firebaseApp.options.projectId}, DB: ${databaseId || '(default)'})`);
+
+  // Connectivity Test
+  try {
+      console.log('[FIREBASE] Validating Admin connectivity...');
+      await adminDb.collection('_health').doc('server').set({ 
+          lastActive: new Date().toISOString(),
+          status: 'online',
+          engine: 'dynamic-bootstrap'
+      });
+      console.log('[FIREBASE] Admin connectivity: PASSED');
+  } catch (e: any) {
+      console.error(`[FIREBASE] Admin connectivity: FAILED (${e.code}: ${e.message})`);
+  }
+
   const app = express();
   const httpServer = createServer(app);
   const io = new Server(httpServer, {
@@ -130,6 +176,14 @@ async function startServer() {
     console.log('--- INITIALIZING SCHEDULED MESSAGE PROTOCOL ---');
     setInterval(async () => {
         try {
+            // Diagnostic check to see if we can even access the collection
+            try {
+                await adminDb.collection('scheduled_messages').limit(1).get();
+            } catch (diagError: any) {
+                console.error(`[WORKER] DIAGNOSTIC FAIL: Basic collection read failed with ${diagError.code}: ${diagError.message}`);
+                throw diagError; // Re-throw to be caught by the outer loop
+            }
+
             const now = new Date().toISOString();
             const snap = await adminDb.collection('scheduled_messages')
                 .where('status', 'in', ['pending', 'failed'])
@@ -204,16 +258,16 @@ async function startServer() {
 
     try {
       const usersRef = adminDb.collection('users');
-      let targetUserDoc: admin.firestore.QueryDocumentSnapshot | null = null;
+      let targetUserDoc: any = null;
 
       if (email) {
         const snap = await usersRef.where('email', '==', email.trim()).get();
-        if (!snap.empty) targetUserDoc = snap.docs[0] as admin.firestore.QueryDocumentSnapshot;
+        if (!snap.empty) targetUserDoc = snap.docs[0];
       }
 
       if (!targetUserDoc && phone) {
         const snap = await usersRef.where('phoneNumber', '==', phone.trim()).get();
-        if (!snap.empty) targetUserDoc = snap.docs[0] as admin.firestore.QueryDocumentSnapshot;
+        if (!snap.empty) targetUserDoc = snap.docs[0];
       }
 
       if (!targetUserDoc) {
