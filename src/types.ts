@@ -30,6 +30,8 @@ export interface Message {
   status: 'sent' | 'delivered' | 'seen';
   reactions?: Record<string, string>;
   replyTo?: string;
+  pinned?: boolean;
+  scheduled?: boolean;
   disappearing?: {
     enabled: boolean;
     duration: number; // in seconds
@@ -74,4 +76,17 @@ export interface CallState {
   otherUser: User | null;
   offer: any;
   callType: 'video' | 'voice';
+}
+
+export interface ScheduledMessage {
+  id: string;
+  chatId: string;
+  text: string;
+  senderId: string;
+  scheduledAt: string;
+  status: 'pending' | 'processing' | 'sent' | 'failed' | 'cancelled';
+  createdAt: string;
+  sentAt?: string;
+  retryCount: number;
+  type: 'text' | 'image' | 'video' | 'audio' | 'voice';
 }

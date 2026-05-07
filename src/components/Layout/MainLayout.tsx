@@ -9,7 +9,8 @@ import GhostModeMenu from '../Ghost/GhostModeMenu';
 import SmartControls from '../Chat/SmartControls';
 import CallOverlay from '../Call/CallOverlay';
 import AddContactModal from '../Chat/AddContactModal';
-import { Ghost, ShieldCheck, Users, MessageSquare, Phone, CircleDot, Plus, Zap, Search, Bookmark, Sparkles } from 'lucide-react';
+import MobileBottomNav from '../Navigation/MobileBottomNav';
+import { Ghost, ShieldCheck, Users, MessageSquare, Phone, CircleDot, Plus, Zap, Search, Bookmark, Sparkles, Menu } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../../lib/utils';
 
@@ -29,7 +30,7 @@ export default function MainLayout() {
   };
 
   return (
-    <div className="flex h-screen w-full relative bg-gray-50 dark:bg-[#0B0E11] p-6 gap-6 overflow-hidden font-sans antialiased text-black dark:text-white transition-colors duration-300">
+    <div className="flex h-screen w-full relative sm:p-6 p-2 sm:gap-6 gap-2 overflow-hidden font-sans antialiased transition-colors duration-300">
       <div className="mesh-bg opacity-30 select-none pointer-events-none" />
       
       <AnimatePresence>
@@ -39,7 +40,7 @@ export default function MainLayout() {
             animate={{ opacity: 1, y: 30, x: '-50%' }}
             exit={{ opacity: 0, y: -50, x: '-50%' }}
             className={cn(
-              "fixed top-0 left-1/2 z-[1000] px-8 py-4 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] font-black text-xs uppercase tracking-[0.2em] flex items-center gap-4 backdrop-blur-3xl border",
+              "fixed top-0 left-1/2 z-[1000] px-6 py-3 sm:px-8 sm:py-4 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] font-black text-[10px] sm:text-xs uppercase tracking-[0.2em] flex items-center gap-3 sm:gap-4 backdrop-blur-3xl border",
               toast.type === 'success' 
                 ? "bg-emerald-600/90 border-emerald-500/50 text-white" 
                 : "bg-red-600/90 border-red-500/50 text-white"
@@ -50,11 +51,16 @@ export default function MainLayout() {
           </motion.div>
         )}
       </AnimatePresence>
-      {/* 1. Left Sidebar (Navigation) */}
-      <AppSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      {/* 1. Left Sidebar (Navigation) - Hidden on mobile, absolutely positioned overlay if we wanted to toggle it */}
+      <div className="hidden md:flex flex-col h-full shrink-0">
+        <AppSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      </div>
 
       {/* 2. Middle Panel (Chats, List, etc.) */}
-      <div className="w-[360px] lg:w-[420px] flex flex-col glass rounded-[2.8rem] overflow-hidden z-10 border border-black/5 dark:border-white/[0.05] shadow-[0_30px_100px_rgba(0,0,0,0.4)] relative">
+      <div className={cn(
+        "flex-col glass rounded-[2.2rem] sm:rounded-[2.8rem] overflow-hidden z-20 border border-black/5 dark:border-white/[0.05] relative transition-all duration-500 shrink-0",
+        activeChat && activeTab === 'chats' ? "hidden lg:flex w-[420px]" : "flex w-full md:w-[360px] lg:w-[420px]"
+      )}>
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
@@ -196,7 +202,7 @@ export default function MainLayout() {
       </div>
 
       {/* 3. Main Display Area (Chat or Settings) */}
-      <div className="flex-1 flex flex-col bg-white/40 dark:bg-[#0B0E11]/40 border border-black/5 dark:border-white/[0.05] rounded-[3.2rem] overflow-hidden z-10 shadow-2xl relative">
+      <div className="flex-1 flex flex-col bg-white/20 dark:bg-[#0B0E11] border border-black/5 dark:border-white/[0.05] rounded-[3.2rem] overflow-hidden z-10 shadow-2xl relative">
         <AnimatePresence mode="wait">
           {activeTab === 'settings' ? (
             <motion.div 
@@ -287,6 +293,7 @@ export default function MainLayout() {
 
       <SmartControls />
       <CallOverlay />
+      <MobileBottomNav activeTab={activeTab} setActiveTab={setActiveTab} />
 
       {showGhostSettings && (
         <GhostModeMenu onClose={() => setShowGhostSettings(false)} />

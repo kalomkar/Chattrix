@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { collection, query, where, onSnapshot, orderBy, addDoc, serverTimestamp, updateDoc, doc, increment, getDocs, limit, getDoc } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { useAuth } from './AuthContext';
-import { Chat, Message, User } from '../types';
+import { Chat, Message, User, ScheduledMessage } from '../types';
 import { socket } from '../lib/socket';
 import { handleFirestoreError } from '../lib/firestoreUtils';
 
@@ -11,13 +11,22 @@ interface ChatContextType {
   activeChat: Chat | null;
   messages: Message[];
   setActiveChat: (chat: Chat | null) => void;
-  sendMessage: (text: string, type?: Message['type'], mediaUrl?: string, disappearingDuration?: number) => Promise<void>;
+  sendMessage: (text: string, type?: Message['type'], mediaUrl?: string, disappearingDuration?: number, replyToId?: string) => Promise<void>;
   typingStatus: Record<string, boolean>; // userId -> isTyping
   setTyping: (isTyping: boolean) => void;
   startNewChat: (email: string) => Promise<void>;
   onlineUsers: Set<string>;
   contacts: User[];
   addContact: (email: string) => Promise<void>;
+  clearChat: (chatId: string) => Promise<void>;
+  deleteChat: (chatId: string) => Promise<void>;
+  renameChat: (chatId: string, newName: string) => Promise<void>;
+  togglePin: (chatId: string, messageId: string, pinned: boolean) => Promise<void>;
+  regenerateResponse: () => Promise<void>;
+  scheduledMessages: ScheduledMessage[];
+  scheduleMessage: (text: string, scheduledAt: string, type?: ScheduledMessage['type']) => Promise<void>;
+  cancelScheduledMessage: (messageId: string) => Promise<void>;
+  deleteScheduledMessage: (messageId: string) => Promise<void>;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -30,6 +39,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const [typingStatus, setTypingStatus] = useState<Record<string, boolean>>({});
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
   const [contacts, setContacts] = useState<User[]>([]);
+  const [scheduledMessages, setScheduledMessages] = useState<ScheduledMessage[]>([]);
 
   // Fetch contacts
   useEffect(() => {
@@ -59,6 +69,21 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       (error) => handleFirestoreError(error, 'list', `users/${currentUser.uid}/contacts`, auth.currentUser)
     );
 
+    return () => unsubscribe();
+  }, [currentUser]);
+
+  // Fetch scheduled messages
+  useEffect(() => {
+    if (!currentUser) return;
+    const q = query(
+      collection(db, 'scheduled_messages'),
+      where('senderId', '==', currentUser.uid),
+      orderBy('scheduledAt', 'asc')
+    );
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const msgs = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as ScheduledMessage));
+      setScheduledMessages(msgs);
+    }, (error) => handleFirestoreError(error, 'list', 'scheduled_messages', auth.currentUser));
     return () => unsubscribe();
   }, [currentUser]);
 
@@ -309,7 +334,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     };
   }, [activeChat, currentUser]);
 
-  const sendMessage = async (text: string, type: Message['type'] = 'text', mediaUrl?: string, disappearingDuration?: number) => {
+  const sendMessage = async (text: string, type: Message['type'] = 'text', mediaUrl?: string, disappearingDuration?: number, replyToId?: string) => {
     if (!currentUser || !activeChat) return;
 
     let disappearing = undefined;
@@ -330,6 +355,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       mediaUrl: mediaUrl || null,
       status: 'sent',
       chatId: activeChat.id,
+      replyToId: replyToId || null,
       ...(disappearing && { disappearing })
     };
 
@@ -416,8 +442,153 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     });
   }, [currentUser, activeChat]);
 
+  const clearChat = async (chatId: string) => {
+    if (!currentUser) return;
+    try {
+      const messagesRef = collection(db, 'chats', chatId, 'messages');
+      const snapshot = await getDocs(messagesRef);
+      const { deleteDoc, doc } = await import('firebase/firestore');
+      
+      const promises = snapshot.docs.map(d => deleteDoc(doc(db, 'chats', chatId, 'messages', d.id)));
+      await Promise.all(promises);
+      
+      // Update last message
+      await updateDoc(doc(db, 'chats', chatId), {
+        lastMessage: null,
+        updatedAt: serverTimestamp()
+      });
+    } catch (error) {
+      console.error("Error clearing chat:", error);
+      handleFirestoreError(error, 'write', `chats/${chatId}/messages`, auth.currentUser);
+    }
+  };
+
+  const deleteChat = async (chatId: string) => {
+    if (!currentUser) return;
+    try {
+      await clearChat(chatId);
+      const { deleteDoc, doc } = await import('firebase/firestore');
+      await deleteDoc(doc(db, 'chats', chatId));
+      if (activeChat?.id === chatId) setActiveChat(null);
+    } catch (error) {
+      console.error("Error deleting chat:", error);
+      handleFirestoreError(error, 'write', `chats/${chatId}`, auth.currentUser);
+    }
+  };
+
+  const renameChat = async (chatId: string, newName: string) => {
+    if (!currentUser) return;
+    try {
+      await updateDoc(doc(db, 'chats', chatId), {
+        'groupMetadata.name': newName,
+        updatedAt: serverTimestamp()
+      });
+    } catch (error) {
+      console.error("Error renaming chat:", error);
+      handleFirestoreError(error, 'write', `chats/${chatId}`, auth.currentUser);
+    }
+  };
+
+  const togglePin = async (chatId: string, messageId: string, pinned: boolean) => {
+    if (!currentUser) return;
+    try {
+      await updateDoc(doc(db, 'chats', chatId, 'messages', messageId), {
+        pinned: pinned
+      });
+    } catch (error) {
+      console.error("Error toggling pin:", error);
+      handleFirestoreError(error, 'write', `chats/${chatId}/messages/${messageId}`, auth.currentUser);
+    }
+  };
+
+  const regenerateResponse = async () => {
+    if (!currentUser || !activeChat || activeChat.participants.find(p => p === 'nova-ai-bot') === undefined) return;
+    
+    // Find last user message
+    const lastUserMsg = [...messages].reverse().find(m => m.senderId === currentUser.uid);
+    if (!lastUserMsg) return;
+
+    // Delete last bot response if it exists and was after this user message
+    const lastMsg = messages[messages.length - 1];
+    if (lastMsg && lastMsg.senderId === 'nova-ai-bot') {
+       const { deleteDoc, doc: fireDoc } = await import('firebase/firestore');
+       await deleteDoc(fireDoc(db, 'chats', activeChat.id, 'messages', lastMsg.id));
+    }
+
+    // Trigger AI response again
+    setTimeout(async () => {
+        try {
+          const { getAIAssistance } = await import('../services/geminiService');
+          const history = messages.slice(-10).map(m => ({ 
+            sender: m.senderId === currentUser.uid ? 'User' : 'Nova',
+            text: m.text 
+          }));
+
+          const { reply } = await getAIAssistance(history, true);
+          
+          if (reply) {
+            const novaMsg = {
+              text: reply,
+              senderId: 'nova-ai-bot',
+              timestamp: serverTimestamp(),
+              type: 'text' as const,
+              mediaUrl: null,
+              status: 'delivered' as const,
+              chatId: activeChat.id
+            };
+            await addDoc(collection(db, 'chats', activeChat.id, 'messages'), novaMsg);
+          }
+        } catch (e) {
+          console.error("Nova AI Regeneration Error:", e);
+        }
+      }, 500);
+  };
+
+  const scheduleMessage = async (text: string, scheduledAt: string, type: ScheduledMessage['type'] = 'text') => {
+    if (!currentUser || !activeChat) return;
+    try {
+      const data = {
+        chatId: activeChat.id,
+        text,
+        senderId: currentUser.uid,
+        scheduledAt,
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+        retryCount: 0,
+        type
+      };
+      await addDoc(collection(db, 'scheduled_messages'), data);
+    } catch (error) {
+      console.error("Error scheduling message:", error);
+      handleFirestoreError(error, 'create', 'scheduled_messages', auth.currentUser);
+    }
+  };
+
+  const cancelScheduledMessage = async (messageId: string) => {
+    if (!currentUser) return;
+    try {
+      await updateDoc(doc(db, 'scheduled_messages', messageId), {
+        status: 'cancelled'
+      });
+    } catch (error) {
+      console.error("Error cancelling scheduled message:", error);
+      handleFirestoreError(error, 'update', `scheduled_messages/${messageId}`, auth.currentUser);
+    }
+  };
+
+  const deleteScheduledMessage = async (messageId: string) => {
+    if (!currentUser) return;
+    try {
+      const { deleteDoc, doc: fireDoc } = await import('firebase/firestore');
+      await deleteDoc(fireDoc(db, 'scheduled_messages', messageId));
+    } catch (error) {
+      console.error("Error deleting scheduled message:", error);
+      handleFirestoreError(error, 'delete', `scheduled_messages/${messageId}`, auth.currentUser);
+    }
+  };
+
   return (
-    <ChatContext.Provider value={{ chats, activeChat, messages, setActiveChat, sendMessage, typingStatus, setTyping, onlineUsers, contacts, addContact, startNewChat }}>
+    <ChatContext.Provider value={{ chats, activeChat, messages, setActiveChat, sendMessage, typingStatus, setTyping, onlineUsers, contacts, addContact, startNewChat, clearChat, deleteChat, renameChat, togglePin, regenerateResponse, scheduledMessages, scheduleMessage, cancelScheduledMessage, deleteScheduledMessage }}>
       {children}
     </ChatContext.Provider>
   );

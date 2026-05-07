@@ -125,25 +125,25 @@ export default function AuthPage() {
           <div className="w-20 h-20 bg-blue-600 rounded-3xl flex items-center justify-center mb-6 shadow-xl shadow-blue-900/40 rotate-3 group hover:rotate-0 transition-transform duration-500">
             <Ghost className="text-white w-10 h-10" />
           </div>
-          <h1 className="text-3xl font-black text-white tracking-tight">Chattrix</h1>
-          <p className="text-white/40 text-center mt-2 text-sm font-medium">
+          <h1 className="text-3xl font-black text-black dark:text-white tracking-tight">Chattrix</h1>
+          <p className="text-black/40 dark:text-white/40 text-center mt-2 text-sm font-medium">
             Privacy first. Real-time always.
           </p>
         </div>
 
         <div id="recaptcha-container"></div>
 
-        <div className="flex p-1 bg-white/5 rounded-2xl mb-8 border border-white/5">
+        <div className="flex p-1 bg-black/5 dark:bg-white/5 rounded-2xl mb-8 border border-black/5 dark:border-white/5">
           <button 
             onClick={() => { setAuthMethod('email'); setConfirmationResult(null); }}
-            className={cn("flex-1 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2", authMethod === 'email' ? "bg-white/10 text-white shadow-lg" : "text-white/40 hover:text-white/60")}
+            className={cn("flex-1 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2", authMethod === 'email' ? "bg-white dark:bg-white/10 text-black dark:text-white shadow-lg" : "text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white")}
           >
             <Mail size={14} />
             Email
           </button>
           <button 
             onClick={() => { setAuthMethod('phone'); setIsLogin(true); }}
-            className={cn("flex-1 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2", authMethod === 'phone' ? "bg-white/10 text-white shadow-lg" : "text-white/40 hover:text-white/60")}
+            className={cn("flex-1 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2", authMethod === 'phone' ? "bg-white dark:bg-white/10 text-black dark:text-white shadow-lg" : "text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white")}
           >
             <Phone size={14} />
             Phone
@@ -183,36 +183,36 @@ export default function AuthPage() {
             >
               {!isLogin && (
                 <div className="space-y-1.5">
-                  <label className="text-[10px] uppercase font-bold tracking-widest text-white/40 ml-1">Name</label>
+                  <label className="text-[10px] uppercase font-bold tracking-widest text-black/40 dark:text-white/40 ml-1">Name</label>
                   <input
                     type="text"
                     required
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white text-sm focus:border-blue-500/50 outline-none transition-all placeholder-white/20"
+                    className="w-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-2xl p-4 text-black dark:text-white text-sm focus:border-blue-500/50 outline-none transition-all placeholder-black/20 dark:placeholder-white/20"
                     placeholder="Marcus Chen"
                   />
                 </div>
               )}
               <div className="space-y-1.5">
-                <label className="text-[10px] uppercase font-bold tracking-widest text-white/40 ml-1">Email</label>
+                <label className="text-[10px] uppercase font-bold tracking-widest text-black/40 dark:text-white/40 ml-1">Email</label>
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white text-sm focus:border-blue-500/50 outline-none transition-all placeholder-white/20"
+                  className="w-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-2xl p-4 text-black dark:text-white text-sm focus:border-blue-500/50 outline-none transition-all placeholder-black/20 dark:placeholder-white/20"
                   placeholder="marcus@nexus.chat"
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[10px] uppercase font-bold tracking-widest text-white/40 ml-1">Password</label>
+                <label className="text-[10px] uppercase font-bold tracking-widest text-black/40 dark:text-white/40 ml-1">Password</label>
                 <input
                   type="password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white text-sm focus:border-blue-500/50 outline-none transition-all placeholder-white/20"
+                  className="w-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-2xl p-4 text-black dark:text-white text-sm focus:border-blue-500/50 outline-none transition-all placeholder-black/20 dark:placeholder-white/20"
                   placeholder="••••••••"
                 />
               </div>

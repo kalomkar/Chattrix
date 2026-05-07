@@ -49,12 +49,19 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     root.classList.add(`font-size-${settings.fontSize}`);
     
     // Apply Theme
-    if (settings.theme === 'dark') {
+    const isDark = settings.theme === 'dark';
+    if (isDark) {
       root.classList.add('dark');
     } else {
       root.classList.remove('dark');
     }
+    
+    // Smooth transition for theme change
+    root.style.setProperty('color-scheme', isDark ? 'dark' : 'light');
   }, [settings]);
+
+  // Listen for system theme changes if no preference is set in future 
+  // (Optional: can be added here if we want to follow system)
 
   const updateSetting = (key: keyof Settings, value: any) => {
     setSettings(prev => ({ ...prev, [key]: value }));

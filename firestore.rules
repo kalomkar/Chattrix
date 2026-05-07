@@ -63,5 +63,14 @@ service cloud.firestore {
       allow update: if isSignedIn() && (resource.data.uid == request.auth.uid || request.auth.uid in resource.data.views);
       allow delete: if isSignedIn() && resource.data.uid == request.auth.uid;
     }
+
+    // Scheduled Messages
+    match /scheduled_messages/{messageId} {
+      allow read, delete: if isSignedIn() && resource.data.senderId == request.auth.uid;
+      allow create: if isSignedIn() && request.resource.data.senderId == request.auth.uid;
+      allow update: if isSignedIn() && resource.data.senderId == request.auth.uid && (
+        resource.data.status == 'pending' || resource.data.status == 'failed'
+      );
+    }
   }
 }

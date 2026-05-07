@@ -1,5 +1,5 @@
 import React from 'react';
-import { Image, Camera, FileText, Music, MapPin, User, X } from 'lucide-react';
+import { Image, Camera, FileText, Music, MapPin, User, X, Clock } from 'lucide-react';
 import { motion } from 'motion/react';
 
 interface QuickActionPanelProps {
@@ -13,8 +13,8 @@ export default function QuickActionPanel({ onSelect, onClose }: QuickActionPanel
     { id: 'camera', label: 'Camera', icon: Camera, color: 'bg-pink-500' },
     { id: 'document', label: 'Document', icon: FileText, color: 'bg-blue-500' },
     { id: 'audio', label: 'Audio', icon: Music, color: 'bg-orange-500' },
+    { id: 'schedule', label: 'Schedule', icon: Clock, color: 'bg-emerald-500' },
     { id: 'location', label: 'Location', icon: MapPin, color: 'bg-green-500' },
-    { id: 'contact', label: 'Contact', icon: User, color: 'bg-cyan-500' },
   ];
 
   return (

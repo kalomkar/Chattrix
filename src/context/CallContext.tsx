@@ -83,6 +83,24 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
 
   const startCall = async (targetUser: User, callType: 'video' | 'voice') => {
     try {
+      // Check for devices before calling getUserMedia
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const hasVideo = devices.some(device => device.kind === 'videoinput');
+      const hasAudio = devices.some(device => device.kind === 'audioinput');
+
+      if (!hasAudio) {
+        alert("No microphone found. Please connect one and try again.");
+        return;
+      }
+
+      if (callType === 'video' && !hasVideo) {
+        if (confirm("No camera found. Would you like to start a voice call instead?")) {
+          callType = 'voice';
+        } else {
+          return;
+        }
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({
         video: callType === 'video',
         audio: true
@@ -120,16 +138,38 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
         offer: null,
         callType
       });
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to start call:", err);
-      alert("Microphone/Camera permission denied");
+      if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+        alert("Required device could not be found. Please ensure your microphone/camera is connected.");
+      } else if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        alert("Microphone/Camera permission denied. Please allow access to use this feature.");
+      } else {
+        alert(`Failed to start call: ${err.message || 'Unknown error'}`);
+      }
     }
   };
 
   const answerCall = async () => {
     try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const hasVideo = devices.some(device => device.kind === 'videoinput');
+      const hasAudio = devices.some(device => device.kind === 'audioinput');
+
+      if (!hasAudio) {
+        alert("No microphone found. Please connect one to answer.");
+        rejectCall();
+        return;
+      }
+
+      let actualCallType = callState.callType;
+      if (actualCallType === 'video' && !hasVideo) {
+        alert("No camera found. Answering as voice call.");
+        actualCallType = 'voice';
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: callState.callType === 'video',
+        video: actualCallType === 'video',
         audio: true
       });
 
@@ -156,8 +196,15 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
       peer.signal(callState.offer);
       peerRef.current = peer;
       setCallState(prev => ({ ...prev, isActive: true, isIncoming: false }));
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to answer call:", err);
+      if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+        alert("Required device could not be found. Please ensure your microphone/camera is connected.");
+      } else if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        alert("Microphone/Camera permission denied. Please allow access to use this feature.");
+      } else {
+        alert(`Failed to answer call: ${err.message || 'Unknown error'}`);
+      }
       rejectCall();
     }
   };

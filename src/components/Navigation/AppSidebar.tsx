@@ -38,7 +38,7 @@ export default function AppSidebar({ activeTab, setActiveTab }: AppSidebarProps)
     <motion.div
       initial={false}
       animate={{ width: isExpanded ? 240 : 88 }}
-      className="h-full bg-white/80 dark:bg-[#0B0E11]/80 backdrop-blur-2xl rounded-[2.8rem] border border-black/5 dark:border-white/[0.05] flex flex-col relative z-50 transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] group shadow-[0_30px_100px_rgba(0,0,0,0.5)] overflow-hidden"
+      className="h-full glass rounded-[2.8rem] flex flex-col relative z-50 transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] group overflow-hidden"
     >
       {/* Toggle Button */}
       <button
@@ -85,7 +85,7 @@ export default function AppSidebar({ activeTab, setActiveTab }: AppSidebarProps)
               className={cn(
                 "w-full flex items-center gap-4 p-4 rounded-2xl transition-all relative overflow-hidden",
                 activeTab === item.id 
-                   ? "bg-emerald-600 text-black shadow-[0_10px_30px_rgba(16,185,129,0.3)]" 
+                   ? "bg-emerald-600 text-white shadow-[0_10px_30px_rgba(16,185,129,0.3)]" 
                    : "text-black/30 dark:text-white/30 hover:text-black dark:hover:text-white hover:bg-black/[0.05] dark:hover:bg-white/[0.05]"
               )}
             >
@@ -113,7 +113,7 @@ export default function AppSidebar({ activeTab, setActiveTab }: AppSidebarProps)
             </button>
 
             {!isExpanded && (
-              <div className="absolute left-full ml-4 top-1/2 -translate-y-1/2 px-4 py-2 bg-emerald-500 text-black text-[10px] font-black uppercase tracking-widest rounded-xl opacity-0 group-hover/item:opacity-100 pointer-events-none transition-all translate-x-2 group-hover/item:translate-x-0 whitespace-nowrap z-[100] shadow-2xl border border-white/20">
+              <div className="absolute left-full ml-4 top-1/2 -translate-y-1/2 px-4 py-2 bg-black dark:bg-white text-white dark:text-black text-[10px] font-black uppercase tracking-widest rounded-xl opacity-0 group-hover/item:opacity-100 pointer-events-none transition-all translate-x-2 group-hover/item:translate-x-0 whitespace-nowrap z-[100] shadow-2xl">
                 {item.label}
               </div>
             )}

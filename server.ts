@@ -4,10 +4,11 @@ import { Server } from 'socket.io';
 import { createServer as createViteServer } from 'vite';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, query, where, getDocs, addDoc } from 'firebase/firestore';
 import fs from 'fs';
 import dotenv from 'dotenv';
+
+import admin from 'firebase-admin';
+import { getFirestore } from 'firebase-admin/firestore';
 
 dotenv.config();
 
@@ -22,15 +23,17 @@ if (fs.existsSync(configPath)) {
   firebaseConfig = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
 }
 
-const config = {
-  apiKey: process.env.VITE_FIREBASE_API_KEY || firebaseConfig.apiKey,
-  authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN || firebaseConfig.authDomain,
-  projectId: process.env.VITE_FIREBASE_PROJECT_ID || firebaseConfig.projectId,
-  storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET || firebaseConfig.storageBucket,
-  messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID || firebaseConfig.messagingSenderId,
-  appId: process.env.VITE_FIREBASE_APP_ID || firebaseConfig.appId,
-  firestoreDatabaseId: process.env.VITE_FIREBASE_FIRESTORE_DB_ID || firebaseConfig.firestoreDatabaseId
-};
+// Initialize Admin SDK
+if (!admin.apps.length) {
+  admin.initializeApp({
+    projectId: process.env.VITE_FIREBASE_PROJECT_ID || firebaseConfig.projectId,
+  });
+}
+
+// In firebase-admin v11.1.0+, you can specify the database ID
+const adminDb = firebaseConfig.firestoreDatabaseId 
+    ? getFirestore(admin.app(), firebaseConfig.firestoreDatabaseId)
+    : getFirestore(admin.app());
 
 async function startServer() {
   const app = express();
@@ -122,9 +125,74 @@ async function startServer() {
     });
   });
 
-  // Backend Firebase Init
-  const firebaseApp = initializeApp(config);
-  const db = getFirestore(firebaseApp, config.firestoreDatabaseId);
+  // Scheduled Message Worker
+  const startScheduledWorker = () => {
+    console.log('--- INITIALIZING SCHEDULED MESSAGE PROTOCOL ---');
+    setInterval(async () => {
+        try {
+            const now = new Date().toISOString();
+            const snap = await adminDb.collection('scheduled_messages')
+                .where('status', 'in', ['pending', 'failed'])
+                .where('scheduledAt', '<=', now)
+                .limit(10)
+                .get();
+
+            if (snap.empty) return;
+
+            console.log(`[WORKER] Intercepted ${snap.size} pending transmissions...`);
+
+            for (const d of snap.docs) {
+                const msgData = d.data();
+                try {
+                    // Start a transaction or batch if needed, but simple updates are fine
+                    // 1. Lock for processing
+                    await d.ref.update({ status: 'processing' });
+
+                    const timestamp = admin.firestore.Timestamp.now();
+
+                    // 2. Transmit to actual chat
+                    await adminDb.collection('chats').doc(msgData.chatId).collection('messages').add({
+                        text: msgData.text,
+                        senderId: msgData.senderId,
+                        timestamp: timestamp,
+                        type: msgData.type || 'text',
+                        status: 'sent',
+                        scheduled: true
+                    });
+
+                    // 3. Update Chat Last Signal
+                    await adminDb.collection('chats').doc(msgData.chatId).update({
+                        lastMessage: {
+                            text: msgData.text,
+                            senderId: msgData.senderId,
+                            timestamp: timestamp
+                        },
+                        updatedAt: timestamp
+                    });
+
+                    // 4. Mark success
+                    await d.ref.update({ 
+                        status: 'sent',
+                        sentAt: new Date().toISOString()
+                    });
+                    
+                    console.log(`[WORKER] Transmission ${d.id} successful.`);
+                } catch (err) {
+                    console.error(`[WORKER] Transmission ${d.id} failed:`, err);
+                    const retries = (msgData.retryCount || 0) + 1;
+                    await d.ref.update({ 
+                        status: retries >= 5 ? 'failed' : 'pending',
+                        retryCount: retries
+                    });
+                }
+            }
+        } catch (e) {
+            console.error('[WORKER] Error in scheduler loop:', e);
+        }
+    }, 45000); // 45 second pulse
+  };
+
+  startScheduledWorker();
 
   // API Routes
   app.post('/api/contact/add', async (req, res) => {
@@ -135,19 +203,17 @@ async function startServer() {
     }
 
     try {
-      const usersRef = collection(db, 'users');
-      let targetUserDoc = null;
+      const usersRef = adminDb.collection('users');
+      let targetUserDoc: admin.firestore.QueryDocumentSnapshot | null = null;
 
       if (email) {
-        const q = query(usersRef, where('email', '==', email.trim()));
-        const snap = await getDocs(q);
-        if (!snap.empty) targetUserDoc = snap.docs[0];
+        const snap = await usersRef.where('email', '==', email.trim()).get();
+        if (!snap.empty) targetUserDoc = snap.docs[0] as admin.firestore.QueryDocumentSnapshot;
       }
 
       if (!targetUserDoc && phone) {
-        const q = query(usersRef, where('phoneNumber', '==', phone.trim()));
-        const snap = await getDocs(q);
-        if (!snap.empty) targetUserDoc = snap.docs[0];
+        const snap = await usersRef.where('phoneNumber', '==', phone.trim()).get();
+        if (!snap.empty) targetUserDoc = snap.docs[0] as admin.firestore.QueryDocumentSnapshot;
       }
 
       if (!targetUserDoc) {
@@ -160,17 +226,17 @@ async function startServer() {
         return res.status(400).json({ error: 'Cannot add yourself' });
       }
 
-      // Add to user's contacts subcollection (keeping with existing structure)
+      // Add to user's contacts subcollection
       const contactData = {
         uid: targetUserData.uid,
         email: targetUserData.email,
         displayName: targetUserData.displayName,
         photoURL: targetUserData.photoURL,
         phoneNumber: targetUserData.phoneNumber || null,
-        addedAt: new Date()
+        addedAt: admin.firestore.FieldValue.serverTimestamp()
       };
 
-      await addDoc(collection(db, 'users', userId, 'contacts'), contactData);
+      await adminDb.collection('users').doc(userId).collection('contacts').add(contactData);
 
       res.json({ 
         success: true, 

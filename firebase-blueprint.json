@@ -91,6 +91,23 @@
         "expiresAt": { "type": "string", "format": "date-time" },
         "views": { "type": "array", "items": { "type": "string" } }
       }
+    },
+    "ScheduledMessage": {
+      "title": "ScheduledMessage",
+      "description": "Message to be sent at a future time",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "chatId": { "type": "string" },
+        "text": { "type": "string" },
+        "senderId": { "type": "string" },
+        "scheduledAt": { "type": "string", "format": "date-time" },
+        "status": { "enum": ["pending", "processing", "sent", "failed", "cancelled"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "sentAt": { "type": "string", "format": "date-time" },
+        "retryCount": { "type": "number" },
+        "type": { "enum": ["text", "image", "video", "audio", "voice"] }
+      }
     }
   },
   "firestore": {
@@ -109,6 +126,10 @@
     "stories/{storyId}": {
       "schema": "Story",
       "description": "User status stories"
+    },
+    "scheduled_messages/{messageId}": {
+      "schema": "ScheduledMessage",
+      "description": "Global queue for scheduled messages"
     }
   }
 }
