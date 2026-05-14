@@ -323,11 +323,18 @@ function SelectOption({ label, options, value, onSelect }: { label: string, opti
   );
 }
 
-function InputGroup({ label, value, disabled = false }: { label: string, value: string, disabled?: boolean }) {
+function InputGroup({ label, value, disabled = false, onChange }: { label: string, value: string, disabled?: boolean, onChange?: (val: string) => void }) {
   return (
     <div className="p-4 space-y-1">
        <label className="text-[9px] font-black uppercase text-black/20 dark:text-white/20">{label}</label>
-       <input type="text" value={value} disabled={disabled} className="w-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-xl px-4 py-2 text-black dark:text-white disabled:opacity-50 focus:outline-none focus:border-blue-500/50 transition-all font-bold" />
+       <input 
+         type="text" 
+         value={value} 
+         disabled={disabled} 
+         readOnly={!onChange}
+         onChange={(e) => onChange?.(e.target.value)}
+         className="w-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-xl px-4 py-2 text-black dark:text-white disabled:opacity-50 focus:outline-none focus:border-blue-500/50 transition-all font-bold" 
+       />
     </div>
   );
 }

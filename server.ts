@@ -342,7 +342,7 @@ async function startServer() {
         
         console.log(`[AI API] Success: model returned response.`);
         // ... (parse and return)
-        res.json({ response: response.text() });
+        res.json({ response: response.text });
       }
       // ... (other actions)
       res.json({ success: true });
