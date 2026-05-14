@@ -192,16 +192,15 @@ export default function ChatArea() {
   const isTyping = otherParticipantId && typingStatus[otherParticipantId];
 
   return (
-    <div className="flex flex-col h-full bg-[#2B3040] relative overflow-hidden">
-      {/* Background Mesh */}
-      <div className="absolute inset-0 opacity-[0.1] pointer-events-none bg-[url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png')] bg-repeat z-0" />
+    <div className="flex flex-col h-full bg-[#0f1117] relative overflow-hidden">
+      {/* Background Mesh (Removed mesh as requested - "No too much blur/mesh") */}
       
       {/* Header */}
-      <div className="h-20 lg:h-24 px-4 lg:px-8 border-b border-white/10 flex items-center justify-between bg-[#2B3040]/80 backdrop-blur-2xl z-30 transition-all shadow-xl">
+      <div className="h-20 lg:h-24 px-4 lg:px-8 border-b border-white/5 flex items-center justify-between bg-[#1a1d26] z-30 transition-all shadow-xl">
         <div className="flex items-center gap-2 lg:gap-4 shrink-0">
           <button 
             onClick={() => setActiveChat(null)}
-            className="lg:hidden p-2 text-white/40 hover:text-[#00D084] transition-colors"
+            className="lg:hidden p-2 text-white/40 hover:text-[#00d26a] transition-colors"
           >
             <ArrowLeft size={20} />
           </button>

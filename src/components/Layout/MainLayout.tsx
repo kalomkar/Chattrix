@@ -58,7 +58,7 @@ export default function MainLayout() {
 
       {/* 2. Middle Panel (Chats, List, etc.) */}
       <div className={cn(
-        "flex flex-col bg-[#3A4052]/40 rounded-[2.2rem] sm:rounded-[2.8rem] overflow-hidden z-20 border border-white/10 relative transition-all duration-500 shrink-0 backdrop-blur-3xl",
+        "flex flex-col bg-[#1a1d26] rounded-[2.2rem] sm:rounded-[2.8rem] overflow-hidden z-20 border border-white/5 relative transition-all duration-500 shrink-0",
         activeChat && activeTab === 'chats' ? "hidden lg:flex w-[420px]" : "flex w-full md:w-[360px] lg:w-[420px]"
       )}>
         <AnimatePresence mode="wait">
@@ -74,25 +74,25 @@ export default function MainLayout() {
             
             {activeTab === 'contacts' && (
                <div className="flex-1 flex flex-col">
-                  <div className="p-6 border-b border-black/5 dark:border-white/5 flex items-center justify-between">
+                  <div className="p-6 border-b border-white/5 flex items-center justify-between">
                      <div>
-                        <h2 className="text-xl font-black tracking-tight text-black dark:text-white">Contacts</h2>
-                        <p className="text-[10px] uppercase font-bold text-black/30 dark:text-white/30 tracking-widest leading-none mt-1">Verified Chattrix Directory</p>
+                        <h2 className="text-xl font-black tracking-tight text-white">Contacts</h2>
+                        <p className="text-[10px] uppercase font-bold text-white/30 tracking-widest leading-none mt-1">Verified Chattrix Directory</p>
                      </div>
                      <button 
                         onClick={() => setShowAddContact(true)}
-                        className="w-10 h-10 rounded-2xl bg-green-500/10 text-green-500 border border-green-500/20 flex items-center justify-center hover:bg-green-600 hover:text-white transition-all shadow-lg"
+                        className="w-10 h-10 rounded-2xl bg-[#00d26a]/10 text-[#00d26a] border border-[#00d26a]/20 flex items-center justify-center hover:bg-[#00d26a] hover:text-white transition-all shadow-lg"
                       >
                         <Plus size={20} />
                      </button>
                   </div>
                   <div className="p-4">
                      <div className="relative group">
-                        <Search size={14} className="absolute left-4 top-3.5 text-black/20 dark:text-white/20 group-focus-within:text-green-500 transition-colors" />
+                        <Search size={14} className="absolute left-4 top-3.5 text-white/20 group-focus-within:text-[#00d26a] transition-colors" />
                         <input 
                            type="text" 
                            placeholder="Filter link directory..." 
-                           className="w-full bg-black/[0.03] dark:bg-white/[0.03] border border-black/10 dark:border-white/10 rounded-2xl py-3 pl-10 pr-4 text-[10px] font-bold uppercase tracking-widest outline-none focus:border-green-500/50 transition-all text-black dark:text-white placeholder-black/10 dark:placeholder-white/10"
+                           className="w-full bg-white/[0.03] border border-white/5 rounded-2xl py-3 pl-10 pr-4 text-[10px] font-bold uppercase tracking-widest outline-none focus:border-[#00d26a]/50 transition-all text-white placeholder-white/10"
                         />
                      </div>
                   </div>
@@ -105,23 +105,23 @@ export default function MainLayout() {
                                  startNewChat(contact.email);
                                  setActiveTab('chats');
                               }}
-                              className="flex items-center gap-4 p-4 rounded-[1.8rem] hover:bg-black/5 dark:hover:bg-white/[0.05] border border-transparent hover:border-black/5 dark:hover:border-white/5 transition-all cursor-pointer group"
+                              className="flex items-center gap-4 p-4 rounded-[1.8rem] hover:bg-white/[0.05] border border-transparent hover:border-white/5 transition-all cursor-pointer group"
                            >
                               <div className="relative">
                                  <img src={contact.photoURL} className="w-12 h-12 rounded-[1rem] object-cover border border-white/10 group-hover:scale-105 transition-transform" alt={contact.displayName} />
-                                 <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-[#0a0a0f]" />
+                                 <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-[#00d26a] rounded-full border-2 border-[#1a1d26]" />
                               </div>
                               <div className="flex-1 min-w-0">
-                                 <p className="text-sm font-black tracking-tight group-hover:text-emerald-500 transition-colors text-black dark:text-white">{contact.displayName}</p>
-                                 <p className="text-[10px] text-black/20 dark:text-white/20 font-bold tracking-widest uppercase truncate">{contact.email}</p>
+                                 <p className="text-sm font-black tracking-tight group-hover:text-[#00d26a] transition-colors text-white">{contact.displayName}</p>
+                                 <p className="text-[10px] text-white/30 font-bold tracking-widest uppercase truncate">{contact.email}</p>
                               </div>
-                              <button className="w-8 h-8 rounded-full bg-black/5 dark:bg-white/5 flex items-center justify-center text-black/20 dark:text-white/20 hover:text-black dark:hover:text-white hover:bg-black/10 dark:hover:bg-white/10 transition-all opacity-0 group-hover:opacity-100">
+                              <button className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-white/20 hover:text-white hover:bg-white/10 transition-all opacity-0 group-hover:opacity-100">
                                  <MessageSquare size={14} />
                               </button>
                            </div>
                         ))
                      ) : (
-                        <div className="flex-1 flex flex-col items-center justify-center p-12 text-center text-black/10 dark:text-white/10 select-none">
+                        <div className="flex-1 flex flex-col items-center justify-center p-12 text-center text-white/10 select-none">
                            <Users size={64} className="mb-6 opacity-5" />
                            <p className="text-xs font-black uppercase tracking-[0.2em] mb-2">Network directory is empty</p>
                            <button 
@@ -135,15 +135,15 @@ export default function MainLayout() {
                   </div>
                </div>
             )}
-
+...
             {activeTab === 'status' && (
               <div className="flex-1 flex flex-col">
-                  <div className="p-6 border-b border-black/5 dark:border-white/5">
-                     <h2 className="text-xl font-black tracking-tight text-black dark:text-white">Status</h2>
-                     <p className="text-[10px] uppercase font-bold text-black/30 dark:text-white/30 tracking-widest leading-none mt-1">Ephemeral Chattrix Updates</p>
+                  <div className="p-6 border-b border-white/5">
+                     <h2 className="text-xl font-black tracking-tight text-white">Status</h2>
+                     <p className="text-[10px] uppercase font-bold text-white/30 tracking-widest leading-none mt-1">Ephemeral Chattrix Updates</p>
                   </div>
-                  <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-black/20 dark:text-white/20">
-                     <CircleDot size={48} className="text-emerald-400 mb-4 opacity-20" />
+                  <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-white/20">
+                     <CircleDot size={48} className="text-[#00d26a] mb-4 opacity-20" />
                      <p className="text-[10px] font-bold uppercase tracking-widest">No active stories available</p>
                   </div>
               </div>
@@ -151,11 +151,11 @@ export default function MainLayout() {
 
             {activeTab === 'calls' && (
               <div className="flex-1 flex flex-col">
-                  <div className="p-6 border-b border-black/5 dark:border-white/5">
-                     <h2 className="text-xl font-bold tracking-tight text-black dark:text-white">Recent Calls</h2>
-                     <p className="text-[10px] uppercase font-bold text-black/30 dark:text-white/30 tracking-widest leading-none mt-1">Encrypted Call History</p>
+                  <div className="p-6 border-b border-white/5">
+                     <h2 className="text-xl font-bold tracking-tight text-white">Recent Calls</h2>
+                     <p className="text-[10px] uppercase font-bold text-white/30 tracking-widest leading-none mt-1">Encrypted Call History</p>
                   </div>
-                  <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-black/20 dark:text-white/20">
+                  <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-white/20">
                      <Phone size={48} className="text-cyan-400 mb-4 opacity-20" />
                      <p className="text-[10px] font-bold uppercase tracking-widest">Secure log is empty</p>
                   </div>
@@ -164,11 +164,11 @@ export default function MainLayout() {
 
             {activeTab === 'groups' && (
               <div className="flex-1 flex flex-col">
-                  <div className="p-6 border-b border-black/5 dark:border-white/5">
-                     <h2 className="text-xl font-bold tracking-tight text-black dark:text-white">Groups</h2>
-                     <p className="text-[10px] uppercase font-bold text-black/30 dark:text-white/30 tracking-widest leading-none mt-1">Chattrix Community Clusters</p>
+                  <div className="p-6 border-b border-white/5">
+                     <h2 className="text-xl font-bold tracking-tight text-white">Groups</h2>
+                     <p className="text-[10px] uppercase font-bold text-white/30 tracking-widest leading-none mt-1">Chattrix Community Clusters</p>
                   </div>
-                  <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-black/20 dark:text-white/20">
+                  <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-white/20">
                      <Users size={48} className="text-green-500 mb-4 opacity-20" />
                      <p className="text-[10px] font-bold uppercase tracking-widest">No active groups</p>
                   </div>
@@ -177,11 +177,11 @@ export default function MainLayout() {
 
             {activeTab === 'saved' && (
               <div className="flex-1 flex flex-col">
-                  <div className="p-6 border-b border-black/5 dark:border-white/5">
-                     <h2 className="text-xl font-bold tracking-tight text-black dark:text-white">Saved</h2>
-                     <p className="text-[10px] uppercase font-bold text-black/30 dark:text-white/30 tracking-widest leading-none mt-1">Personal Archive</p>
+                  <div className="p-6 border-b border-white/5">
+                     <h2 className="text-xl font-bold tracking-tight text-white">Saved</h2>
+                     <p className="text-[10px] uppercase font-bold text-white/30 tracking-widest leading-none mt-1">Personal Archive</p>
                   </div>
-                  <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-black/20 dark:text-white/20">
+                  <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-white/20">
                      <Bookmark size={48} className="text-yellow-500 mb-4 opacity-20" />
                      <p className="text-[10px] font-bold uppercase tracking-widest">Archive is empty</p>
                   </div>
@@ -194,7 +194,7 @@ export default function MainLayout() {
         {activeTab === 'chats' && (
           <button 
             onClick={() => setShowAddContact(true)}
-            className="absolute bottom-8 right-8 w-14 h-14 bg-green-600 rounded-2xl flex items-center justify-center text-white shadow-2xl shadow-green-600/40 hover:scale-110 active:scale-95 transition-all group z-30"
+            className="absolute bottom-8 right-8 w-14 h-14 bg-[#00d26a] rounded-2xl flex items-center justify-center text-white shadow-2xl shadow-[#00d26a]/40 hover:scale-110 active:scale-95 transition-all group z-30"
           >
             <Plus size={24} className="group-hover:rotate-90 transition-transform" />
           </button>
@@ -202,7 +202,7 @@ export default function MainLayout() {
       </div>
 
       {/* 3. Main Display Area (Chat or Settings) */}
-      <div className="flex-1 flex flex-col bg-white/20 dark:bg-[#0B0E11] border border-black/5 dark:border-white/[0.05] rounded-[3.2rem] overflow-hidden z-10 shadow-2xl relative">
+      <div className="flex-1 flex flex-col bg-[#1a1d26] border border-white/5 rounded-[3.2rem] overflow-hidden z-10 shadow-2xl relative">
         <AnimatePresence mode="wait">
           {activeTab === 'settings' ? (
             <motion.div 

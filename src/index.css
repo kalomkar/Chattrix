@@ -20,22 +20,16 @@
   }
 
   .dark {
-    --wa-dark-bg: #2B3040;
-    --color-glass: rgba(255, 255, 255, 0.06);
-    --color-glass-border: rgba(255, 255, 255, 0.12);
+    --wa-dark-bg: #0f1117;
+    --card-bg: #1a1d26;
+    --color-glass: rgba(26, 29, 38, 0.9);
+    --color-glass-border: rgba(255, 255, 255, 0.08);
     --scrollbar-thumb: rgba(255, 255, 255, 0.1);
-    --mesh-color-1: rgba(0, 208, 132, 0.15);
-    --mesh-color-2: rgba(37, 99, 255, 0.15);
-    --mesh-color-3: rgba(0, 208, 132, 0.1);
-    --text-primary: #FFFFFF;
-    --text-secondary: #D1D5DB;
-    --text-muted: #9CA3AF;
-    --text-placeholder: #9CA3AF;
-    --surface-content: #3A4052;
-    --shadow-main: 0 30px 100px rgba(0, 0, 0, 0.5);
-    --primary-blue: #2563FF;
-    --accent-green: #00D084;
-    --accent-blue: #2563FF;
+    --text-primary: #ffffff;
+    --text-secondary: #b3b3b3;
+    --text-muted: #808080;
+    --accent-green: #00d26a;
+    --shadow-main: 0 4px 12px rgba(0, 0, 0, 0.2);
   }
 
   .font-size-small { --font-size-base: 12px; }
@@ -61,10 +55,7 @@
   --color-glass: var(--color-glass);
   --color-glass-border: var(--color-glass-border);
   --color-accent-green: var(--accent-green);
-  --color-accent-blue: var(--accent-blue);
-  --animate-typing: typing 1.4s infinite;
-  --shadow-neon-green: 0 0 15px rgba(0, 208, 132, 0.5);
-  --shadow-neon-blue: 0 0 15px rgba(37, 99, 255, 0.5);
+  --shadow-neon-green: 0 0 15px var(--accent-green);
 }
 
 @keyframes typing {
@@ -73,9 +64,7 @@
 }
 
 .glass {
-  background: var(--color-glass);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: var(--card-bg);
   border: 1px solid var(--color-glass-border);
   box-shadow: var(--shadow-main);
   transition: background 0.3s ease, border-color 0.3s ease;
