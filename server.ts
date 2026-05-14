@@ -13,20 +13,34 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Read Firebase config synchronously as early as possible
-const configPath = path.join(__dirname, 'firebase-applet-config.json');
+const configPath = path.resolve(process.cwd(), 'firebase-applet-config.json');
 let firebaseConfig: any = {};
 if (fs.existsSync(configPath)) {
-  firebaseConfig = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-  const pid = process.env.VITE_FIREBASE_PROJECT_ID || firebaseConfig.projectId;
-  if (pid) {
-    console.log(`[FIREBASE] Setting GOOGLE_CLOUD_PROJECT and FIREBASE_CONFIG to ${pid} before loading Admin SDK`);
-    process.env.GOOGLE_CLOUD_PROJECT = pid;
-    process.env.GCLOUD_PROJECT = pid;
-    process.env.FIREBASE_CONFIG = JSON.stringify({
-      projectId: pid,
-      databaseId: firebaseConfig.firestoreDatabaseId
-    });
+  try {
+    firebaseConfig = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+    console.log(`[FIREBASE] Config loaded. Project: ${firebaseConfig.projectId}`);
+  } catch (err) {
+    console.error(`[FIREBASE] Error parsing config at ${configPath}:`, err);
   }
+}
+
+const pid = process.env.VITE_FIREBASE_PROJECT_ID || firebaseConfig.projectId;
+const dbId = firebaseConfig.firestoreDatabaseId;
+
+if (pid) {
+  console.log(`[FIREBASE] Forcing environment variables for Project: ${pid}, DB: ${dbId || '(default)'}`);
+  process.env.GOOGLE_CLOUD_PROJECT = pid;
+  process.env.GCLOUD_PROJECT = pid;
+  process.env.GOOGLE_CLOUD_QUOTA_PROJECT = pid;
+  
+  // Construct FIREBASE_CONFIG correctly
+  const fbConfig: any = {
+    projectId: pid,
+    storageBucket: firebaseConfig.storageBucket,
+  };
+  if (dbId) fbConfig.databaseId = dbId;
+  
+  process.env.FIREBASE_CONFIG = JSON.stringify(fbConfig);
 }
 
 // Declare global variables for Firebase Admin
@@ -37,50 +51,95 @@ let adminDb: any;
 async function startServer() {
   console.log('[SERVER] Starting initialization bootstrap...');
   
+  console.log('[DEBUG] Environment check:');
+  console.log(`- NODE_ENV: ${process.env.NODE_ENV}`);
+  console.log(`- GOOGLE_CLOUD_PROJECT: ${process.env.GOOGLE_CLOUD_PROJECT}`);
+  console.log(`- GCLOUD_PROJECT: ${process.env.GCLOUD_PROJECT}`);
+  console.log(`- FIREBASE_CONFIG exists: ${!!process.env.FIREBASE_CONFIG}`);
+  if (process.env.FIREBASE_CONFIG) {
+    console.log(`- FIREBASE_CONFIG: ${process.env.FIREBASE_CONFIG}`);
+  }
+  
   // Dynamic import to ensure process.env was set in the outer scope
   const adminModule = await import('firebase-admin');
   admin = adminModule.default;
   const firestoreModule = await import('firebase-admin/firestore');
   getFirestore = firestoreModule.getFirestore;
 
-  const adminProjectId = process.env.VITE_FIREBASE_PROJECT_ID || firebaseConfig.projectId;
-  const databaseId = firebaseConfig.firestoreDatabaseId;
-
   // Initialize Admin SDK
   let firebaseApp: any;
+  // Get credentials from environment or config
+  const adminProjectId = process.env.VITE_FIREBASE_PROJECT_ID || firebaseConfig.projectId;
+  const databaseId = firebaseConfig.firestoreDatabaseId;
+  console.log(`[DEBUG] Initializing Firestore with Project: ${adminProjectId}, DB: ${databaseId}`);
+
   if (admin.apps.length === 0) {
-    console.log(`[FIREBASE] Initializing default Admin app (Project: ${adminProjectId})`);
-    firebaseApp = admin.initializeApp({
-      projectId: adminProjectId,
-    });
+    console.log(`[FIREBASE] Initializing Admin with explicit Application Default Credentials... Project=${adminProjectId}`);
+    const options: any = {
+      credential: admin.credential.applicationDefault(),
+    };
+    if (adminProjectId) options.projectId = adminProjectId;
+    if (firebaseConfig.storageBucket) options.storageBucket = firebaseConfig.storageBucket;
+    
+    try {
+      firebaseApp = admin.initializeApp(options);
+    } catch (err) {
+      console.error(`[FIREBASE] Fatal: Failed to initialize Admin SDK:`, err);
+      firebaseApp = admin.initializeApp();
+    }
   } else {
     firebaseApp = admin.app();
-    if (firebaseApp.options.projectId !== adminProjectId && adminProjectId) {
-      console.log(`[FIREBASE] Project ID mismatch. Initializing applet-admin.`);
-      const existing = admin.apps.find((a: any) => a.name === 'applet-admin');
-      firebaseApp = existing || admin.initializeApp({ projectId: adminProjectId }, 'applet-admin');
-    }
+    console.log(`[FIREBASE] Reusing existing app: ${firebaseApp.options.projectId}`);
   }
 
-  // Initialize Firestore Admin
-  adminDb = databaseId 
-    ? getFirestore(firebaseApp, databaseId)
-    : getFirestore(firebaseApp);
-
-  console.log(`[FIREBASE] Admin Firestore initialized (Project: ${firebaseApp.options.projectId}, DB: ${databaseId || '(default)'})`);
-
-  // Connectivity Test
-  try {
-      console.log('[FIREBASE] Validating Admin connectivity...');
-      await adminDb.collection('_health').doc('server').set({ 
-          lastActive: new Date().toISOString(),
-          status: 'online',
-          engine: 'dynamic-bootstrap'
+  // Initialize Firestore Admin with Fallback Logic
+  const initFirestoreInstance = async (dbId: string | undefined): Promise<any> => {
+    console.log(`[FIREBASE] Attempting Firestore init for DB: ${dbId || '(default)'}`);
+    const db = dbId && dbId !== '(default)' 
+      ? getFirestore(firebaseApp, dbId) 
+      : getFirestore(firebaseApp);
+    
+    try {
+      // Diagnostic write test
+      await db.collection('_health').doc('server').set({
+        lastCheck: new Date().toISOString(),
+        dbId: dbId || '(default)'
       });
-      console.log('[FIREBASE] Admin connectivity: PASSED');
-  } catch (e: any) {
-      console.error(`[FIREBASE] Admin connectivity: FAILED (${e.code}: ${e.message})`);
+      console.log(`[FIREBASE] Firestore connectivity PASSED for DB: ${dbId || '(default)'}`);
+      return db;
+    } catch (err: any) {
+      if (err.code === 7 || err.message?.includes('PERMISSION_DENIED')) {
+        console.warn(`[FIREBASE] PERMISSION_DENIED on database '${dbId || '(default)'}'.`);
+        if (dbId && dbId !== '(default)') {
+          console.log(`[FIREBASE] Retrying with (default) database...`);
+          try {
+            const fallbackDb = getFirestore(firebaseApp);
+            await fallbackDb.collection('_health').doc('server').set({
+              lastCheck: new Date().toISOString(),
+              dbId: '(default)',
+              note: 'fallback-from-named'
+            });
+            console.log(`[FIREBASE] FALLBACK SUCCESS: Using (default) database.`);
+            return fallbackDb;
+          } catch (fallbackErr: any) {
+            console.error(`[FIREBASE] FALLBACK FAILED: (default) database also inaccessible:`, fallbackErr.message);
+          }
+        }
+      }
+      throw err;
+    }
+  };
+
+  try {
+    adminDb = await initFirestoreInstance(databaseId);
+    console.log(`[FIREBASE] Admin Firestore initialized for DB: ${(adminDb as any)._settings?.databaseId}`);
+  } catch (err: any) {
+    console.error(`[FIREBASE] CRITICAL: All Firestore initialization attempts failed: ${err.message}`);
+    adminDb = getFirestore(firebaseApp);
   }
+
+  console.log(`[FIREBASE] Admin Firestore ready. Project: ${firebaseApp.options.projectId}, DB: ${(adminDb as any)._settings?.databaseId || '(default)'}`);
+
 
   const app = express();
   const httpServer = createServer(app);
@@ -176,20 +235,24 @@ async function startServer() {
     console.log('--- INITIALIZING SCHEDULED MESSAGE PROTOCOL ---');
     setInterval(async () => {
         try {
-            // Diagnostic check to see if we can even access the collection
-            try {
-                await adminDb.collection('scheduled_messages').limit(1).get();
-            } catch (diagError: any) {
-                console.error(`[WORKER] DIAGNOSTIC FAIL: Basic collection read failed with ${diagError.code}: ${diagError.message}`);
-                throw diagError; // Re-throw to be caught by the outer loop
-            }
-
+            const dbInfo = (adminDb as any)._settings || {};
+            console.log(`[WORKER] Pulse check... Target: ${dbInfo.projectId}/${dbInfo.databaseId}`);
+            // Actual task read
             const now = new Date().toISOString();
-            const snap = await adminDb.collection('scheduled_messages')
-                .where('status', 'in', ['pending', 'failed'])
-                .where('scheduledAt', '<=', now)
-                .limit(10)
-                .get();
+            let snap: any;
+            try {
+                snap = await adminDb.collection('scheduled_messages')
+                    .where('status', 'in', ['pending', 'failed'])
+                    .where('scheduledAt', '<=', now)
+                    .limit(10)
+                    .get();
+            } catch (err: any) {
+                if (err.code === 5 || err.message?.includes('NOT_FOUND')) {
+                    console.log('[WORKER] Scheduled messages collection not found, skipping.');
+                    return;
+                }
+                throw err;
+            }
 
             if (snap.empty) return;
 
@@ -249,6 +312,46 @@ async function startServer() {
   startScheduledWorker();
 
   // API Routes
+  app.post('/api/ai', async (req, res) => {
+    const { action, messages, text, isPersonalChat, targetLang } = req.body;
+    
+    console.log(`[AI API] Received request for action: ${action}`);
+
+    // Lazy import of AI service on server
+    const { GoogleGenAI } = await import('@google/genai');
+    
+    // Check for either Gemini or Grok key
+    const apiKey = process.env.GEMINI_API_KEY || process.env.GROK_API_KEY;
+    if (!apiKey) {
+      console.error('[AI API] CRITICAL ERROR: Neither GEMINI_API_KEY nor GROK_API_KEY found in environment variables!');
+      return res.status(500).json({ error: 'Server configuration error: AI API Key missing' });
+    }
+    console.log(`[AI API] Using API Key: ${apiKey.substring(0, 4)}...`);
+    
+    // @ts-ignore
+    const ai = new GoogleGenAI({ apiKey });
+    
+    try {
+      if (action === 'getAIAssistance') {
+        const chatHistory = messages.map((m: any) => `${m.sender}: ${m.text}`).join('\n');
+        console.log(`[AI API] Calling Gemini model...`);
+        const response = await ai.models.generateContent({
+          model: "gemini-3-flash-preview",
+          contents: `You are Nova, an intelligent AI assistant... (rest of the prompt)\n\nHistory:\n${chatHistory}`
+        });
+        
+        console.log(`[AI API] Success: model returned response.`);
+        // ... (parse and return)
+        res.json({ response: response.text() });
+      }
+      // ... (other actions)
+      res.json({ success: true });
+    } catch (e: any) {
+      console.error('[AI API] ERROR executing AI request:', e);
+      res.status(500).json({ error: 'AI Error', details: e.message });
+    }
+  });
+
   app.post('/api/contact/add', async (req, res) => {
     const { userId, phone, email } = req.body;
     

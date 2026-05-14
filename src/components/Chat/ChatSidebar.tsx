@@ -104,14 +104,14 @@ export default function ChatSidebar({ onGhostClick }: ChatSidebarProps) {
       <div className="px-4 mb-2">
         <div className="relative group">
           <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-            <Search size={16} className="text-[var(--text-secondary)] opacity-40 group-focus-within:text-green-500 group-focus-within:opacity-100 transition-all" />
+            <Search size={16} className="text-[#9CA3AF] opacity-60 group-focus-within:text-[#00D084] group-focus-within:opacity-100 transition-all" />
           </div>
           <input 
             type="text" 
-            placeholder="Search or start new chat"
+            placeholder="Search stream..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-black/[0.03] dark:bg-white/[0.03] border border-black/5 dark:border-white/5 rounded-[1.2rem] py-3 pl-12 pr-4 text-xs focus:outline-none focus:border-green-500/30 text-[var(--text-primary)] transition-all placeholder-[var(--text-secondary)] placeholder:opacity-30 font-bold tracking-tight shadow-inner"
+            className="w-full bg-[#3A4052] border border-white/10 rounded-[1.2rem] py-3.5 pl-12 pr-4 text-xs focus:outline-none focus:border-[#00D084]/50 text-white transition-all placeholder-[#9CA3AF] font-bold tracking-tight shadow-xl focus:ring-1 focus:ring-[#00D084]/30"
           />
         </div>
       </div>
@@ -123,24 +123,24 @@ export default function ChatSidebar({ onGhostClick }: ChatSidebarProps) {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={handleNovaClick}
-            className="w-full relative overflow-hidden bg-gray-50 dark:bg-[#151B21] border border-black/5 dark:border-emerald-500/20 rounded-[1.8rem] p-5 flex items-center gap-4 text-left group transition-all shadow-xl"
+            className="w-full relative overflow-hidden bg-[#3A4052] border border-[#00D084]/20 rounded-[1.8rem] p-5 flex items-center gap-4 text-left group transition-all shadow-xl"
           >
-            <div className="w-14 h-14 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform relative z-10">
+            <div className="w-14 h-14 bg-[#00D084]/10 border border-[#00D084]/20 rounded-2xl flex items-center justify-center text-[#00D084] group-hover:scale-110 transition-transform relative z-10">
               <Wand2 size={28} />
             </div>
             <div className="relative z-10">
-              <p className="text-sm font-black text-black dark:text-white leading-tight flex items-center gap-2">
+              <p className="text-sm font-black text-white leading-tight flex items-center gap-2">
                 Talk to Nova AI
-                <span className="inline-flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="inline-flex h-2 w-2 rounded-full bg-[#00D084] animate-pulse" />
               </p>
-              <p className="text-[10px] uppercase font-bold text-black/30 dark:text-white/30 tracking-[0.15em] mt-1.5 line-clamp-1">Assistant Protocol Active</p>
+              <p className="text-[10px] uppercase font-bold text-[#D1D5DB] tracking-[0.15em] mt-1.5 line-clamp-1">Assistant Protocol Active</p>
             </div>
           </motion.button>
         </div>
       )}
 
       {/* Filter Tabs */}
-      <div className="px-4 py-2 flex items-center gap-2 overflow-x-auto no-scrollbar">
+      <div className="px-4 py-3 flex items-center gap-2 overflow-x-auto no-scrollbar">
           {filters.map(f => (
             <button
                key={f.id}
@@ -148,8 +148,8 @@ export default function ChatSidebar({ onGhostClick }: ChatSidebarProps) {
                className={cn(
                   "px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase transition-all whitespace-nowrap",
                   filter === f.id 
-                    ? "bg-green-600/20 text-green-600 dark:text-green-400 border border-green-600/20 dark:border-green-400/20" 
-                    : "bg-black/5 dark:bg-white/[0.03] text-black/40 dark:text-white/30 border border-transparent hover:bg-black/10 dark:hover:bg-white/[0.05]"
+                    ? "bg-[#00D084]/20 text-[#00D084] border border-[#00D084]/30" 
+                    : "bg-[#3A4052] text-[#9CA3AF] border border-white/5 hover:bg-white/10 hover:text-white"
                )}
             >
                {f.label}
@@ -190,16 +190,16 @@ export default function ChatSidebar({ onGhostClick }: ChatSidebarProps) {
                 className={cn(
                   "flex items-center gap-4 p-4 rounded-[1.5rem] transition-all duration-300 cursor-pointer relative overflow-visible mx-1",
                   isActive 
-                    ? "bg-green-600/10 border border-green-500/20 shadow-xl" 
-                    : "hover:bg-white/[0.03] border border-transparent shadow-sm"
+                    ? "bg-[#00D084]/10 border border-[#00D084]/30 shadow-xl" 
+                    : "hover:bg-white/[0.05] border border-transparent shadow-sm"
                 )}
               >
                 <div className="relative shrink-0">
-                  <div className={cn("p-[2px] rounded-full", isOnline ? "bg-gradient-to-tr from-green-500 to-emerald-400" : "bg-black/5 dark:bg-white/5")}>
+                  <div className={cn("p-[2px] rounded-full", isOnline ? "bg-gradient-to-tr from-[#00D084] to-[#2563FF]" : "bg-white/10")}>
                     <img 
                         src={chat.isGroup ? chat.groupMetadata?.photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${chat.groupMetadata?.name}` : otherParticipant?.photoURL} 
                         alt="Chat" 
-                        className="w-12 h-12 rounded-full border border-white dark:border-[#0b141a] object-cover group-hover:scale-105 transition-transform"
+                        className="w-12 h-12 rounded-full border border-[#2B3040] object-cover group-hover:scale-105 transition-transform"
                     />
                   </div>
                 </div>
@@ -212,25 +212,25 @@ export default function ChatSidebar({ onGhostClick }: ChatSidebarProps) {
                            autoFocus
                            value={newChatName}
                            onChange={(e) => setNewChatName(e.target.value)}
-                           className="bg-black/5 dark:bg-white/10 text-xs px-2 py-1 rounded outline-none border border-emerald-500/30 w-full"
+                           className="bg-white/10 text-xs px-2 py-1 rounded outline-none border border-[#00D084]/30 w-full text-white"
                          />
-                         <button type="submit" className="text-emerald-500"><Check size={14} /></button>
+                         <button type="submit" className="text-[#00D084]"><Check size={14} /></button>
                          <button type="button" onClick={() => setEditingChatId(null)} className="text-red-500"><X size={14} /></button>
                       </form>
                     ) : (
-                      <p className={cn("text-sm font-black truncate", isActive ? "text-green-600 dark:text-green-400" : "text-black/80 dark:text-white/80")}>
+                      <p className={cn("text-sm font-black truncate", isActive ? "text-[#00D084]" : "text-white")}>
                         {chat.isGroup ? chat.groupMetadata?.name : otherParticipant?.displayName}
                       </p>
                     )}
-                    <span className="text-[9px] font-bold text-black/20 dark:text-white/20">
+                    <span className="text-[9px] font-bold text-[#9CA3AF]">
                       {formatTime(chat.updatedAt)}
                     </span>
                   </div>
                   
                   <div className="flex justify-between items-center gap-2">
-                    <p className="text-xs truncate font-medium text-black/30 dark:text-white/30">
+                    <p className="text-xs truncate font-medium text-[#D1D5DB]">
                       {typingStatus[otherParticipantId || ''] ? (
-                        <span className="text-green-400 font-bold animate-pulse italic">typing signal...</span>
+                        <span className="text-[#00D084] font-bold animate-pulse italic">typing signal...</span>
                       ) : (chat.lastMessage?.text || 'Ready for stream...')}
                     </p>
                     
@@ -239,7 +239,7 @@ export default function ChatSidebar({ onGhostClick }: ChatSidebarProps) {
                             e.stopPropagation();
                             setShowMenuId(showMenuId === chat.id ? null : chat.id);
                         }}
-                        className="p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded-lg text-black/20 dark:text-white/20"
+                        className="p-1 hover:bg-white/10 rounded-lg text-[#9CA3AF]"
                     >
                         <MoreVertical size={14} />
                     </button>

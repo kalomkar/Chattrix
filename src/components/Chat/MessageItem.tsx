@@ -75,9 +75,9 @@ export default function MessageItem({ message, isFirstInSequence, onReply, onPin
   const StatusIcon = () => {
     if (!isMine) return null;
     switch (message.status) {
-      case 'sent': return <Check size={14} className="text-black/30 dark:text-white/30" />;
-      case 'delivered': return <div className="flex -space-x-2"><Check size={14} className="text-black/30 dark:text-white/30" /><Check size={14} className="text-black/30 dark:text-white/30" /></div>;
-      case 'seen': return <div className="flex -space-x-2"><Check size={14} className="text-blue-400 dark:text-[#53bdeb]" /><Check size={14} className="text-blue-400 dark:text-[#53bdeb]" /></div>;
+      case 'sent': return <Check size={14} className="text-white/40" />;
+      case 'delivered': return <div className="flex -space-x-2"><Check size={14} className="text-white/40" /><Check size={14} className="text-white/40" /></div>;
+      case 'seen': return <div className="flex -space-x-2"><Check size={14} className="text-white" /><Check size={14} className="text-white" /></div>;
       default: return null;
     }
   };
@@ -156,24 +156,24 @@ export default function MessageItem({ message, isFirstInSequence, onReply, onPin
       </AnimatePresence>
 
       <div className={cn(
-        "max-w-[85%] sm:max-w-[70%] relative px-4 pt-3 pb-8 flex flex-col transition-all border shadow-sm",
+        "max-w-[85%] sm:max-w-[70%] relative px-4 pt-3 pb-8 flex flex-col transition-all border shadow-md",
         isMine 
-          ? "bg-emerald-600 dark:bg-emerald-700 text-white border-emerald-500/20 rounded-2xl rounded-tr-none" 
-          : "bg-white dark:bg-[#111827] text-black dark:text-white border-black/5 dark:border-white/5 rounded-2xl rounded-tl-none",
+          ? "bg-[#00D084] text-white border-[#00D084]/20 rounded-2xl rounded-tr-none shadow-[0_4px_12px_rgba(0,208,132,0.15)]" 
+          : "bg-[#3A4052] text-white border-white/10 rounded-2xl rounded-tl-none shadow-[0_4px_12px_rgba(0,0,0,0.15)]",
         isFirstInSequence ? "mt-4" : "mt-0.5",
-        (translatedText || tone) && "ring-1 ring-emerald-500/30 border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.05)]"
+        (translatedText || tone) && "ring-1 ring-[#00D084]/30 border-[#00D084]/50 shadow-[0_0_20px_rgba(0,208,132,0.1)]"
       )}>
         <div className="flex flex-col relative z-10 min-w-[80px]">
             {tone && (
-              <div className="flex items-center gap-1.5 mb-2 px-2 py-1 bg-blue-500/20 rounded-lg self-start">
-                <Sparkles size={10} className="text-blue-400" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-blue-300">Tone: {tone}</span>
+              <div className="flex items-center gap-1.5 mb-2 px-2 py-1 bg-[#2563FF]/20 rounded-lg self-start border border-[#2563FF]/30">
+                <Sparkles size={10} className="text-[#2563FF]" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-[#2563FF]">Tone: {tone}</span>
               </div>
             )}
 
             <div className={cn(
               "text-[14px] leading-relaxed markdown-container",
-              isMine ? "text-white prose-invert" : "text-black dark:text-white prose-emerald"
+              "text-white prose-invert"
             )}>
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
@@ -229,7 +229,7 @@ export default function MessageItem({ message, isFirstInSequence, onReply, onPin
 
         <div className={cn(
           "absolute bottom-1.5 right-3 flex items-center gap-1 text-[9px] font-bold select-none",
-          isMine ? "text-white/40" : "text-black/30 dark:text-white/30"
+          "text-white/60"
         )}>
            <span className="font-mono">{formatTime(message.timestamp)}</span>
            <StatusIcon />

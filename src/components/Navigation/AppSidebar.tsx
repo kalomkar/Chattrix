@@ -85,8 +85,8 @@ export default function AppSidebar({ activeTab, setActiveTab }: AppSidebarProps)
               className={cn(
                 "w-full flex items-center gap-4 p-4 rounded-2xl transition-all relative overflow-hidden",
                 activeTab === item.id 
-                   ? "bg-emerald-600 text-white shadow-[0_10px_30px_rgba(16,185,129,0.3)]" 
-                   : "text-black/30 dark:text-white/30 hover:text-black dark:hover:text-white hover:bg-black/[0.05] dark:hover:bg-white/[0.05]"
+                   ? "bg-[var(--accent-green)] text-white shadow-neon-green" 
+                   : "text-[#9CA3AF] hover:text-white hover:bg-white/[0.08]"
               )}
             >
               <item.icon size={24} className={cn("shrink-0 transition-transform duration-500", activeTab === item.id && "scale-110")} />
@@ -122,12 +122,12 @@ export default function AppSidebar({ activeTab, setActiveTab }: AppSidebarProps)
       </nav>
 
       {/* Footer Area */}
-      <div className="p-4 mt-auto space-y-2 border-t border-white/5">
+      <div className="p-4 mt-auto space-y-2 border-t border-white/10">
         <div className="space-y-1">
            <button 
               onClick={toggleDarkMode}
               className={cn(
-                "w-full flex items-center gap-4 p-4 rounded-2xl text-black/30 dark:text-white/30 hover:text-emerald-500 hover:bg-emerald-500/10 transition-all",
+                "w-full flex items-center gap-4 p-4 rounded-2xl text-[#9CA3AF] hover:text-[#00D084] hover:bg-[#00D084]/10 transition-all",
                 !isExpanded && "justify-center"
               )}
            >
@@ -138,9 +138,9 @@ export default function AppSidebar({ activeTab, setActiveTab }: AppSidebarProps)
               <button 
                   onClick={() => setShowSignals(!showSignals)}
                   className={cn(
-                    "w-full flex items-center gap-4 p-4 rounded-2xl text-black/30 dark:text-white/30 hover:text-emerald-500 hover:bg-emerald-500/10 transition-all",
+                    "w-full flex items-center gap-4 p-4 rounded-2xl text-[#9CA3AF] hover:text-[#00D084] hover:bg-[#00D084]/10 transition-all",
                     !isExpanded && "justify-center",
-                    showSignals && "text-emerald-500 bg-emerald-500/10"
+                    showSignals && "text-[#00D084] bg-[#00D084]/10"
                   )}
               >
                   <Bell size={22} />

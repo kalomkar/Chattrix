@@ -192,45 +192,46 @@ export default function ChatArea() {
   const isTyping = otherParticipantId && typingStatus[otherParticipantId];
 
   return (
-    <div className="flex flex-col h-full bg-[#f8fafc] dark:bg-[#0B0E11] relative overflow-hidden">
+    <div className="flex flex-col h-full bg-[#2B3040] relative overflow-hidden">
       {/* Background Mesh */}
-      <div className="absolute inset-0 opacity-[0.04] dark:opacity-[0.08] pointer-events-none bg-[url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png')] bg-repeat z-0" />
+      <div className="absolute inset-0 opacity-[0.1] pointer-events-none bg-[url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png')] bg-repeat z-0" />
       
       {/* Header */}
-      <div className="h-20 lg:h-24 px-4 lg:px-6 border-b border-black/5 dark:border-white/[0.05] flex items-center justify-between bg-white/80 dark:bg-[#0B0E11]/80 backdrop-blur-xl z-30 transition-all">
+      <div className="h-20 lg:h-24 px-4 lg:px-8 border-b border-white/10 flex items-center justify-between bg-[#2B3040]/80 backdrop-blur-2xl z-30 transition-all shadow-xl">
         <div className="flex items-center gap-2 lg:gap-4 shrink-0">
           <button 
             onClick={() => setActiveChat(null)}
-            className="lg:hidden p-2 text-black/40 dark:text-white/40 hover:text-emerald-500 transition-colors"
+            className="lg:hidden p-2 text-white/40 hover:text-[#00D084] transition-colors"
           >
             <ArrowLeft size={20} />
           </button>
           
           <div className="relative">
-             <div className="p-1 rounded-2xl bg-gradient-to-tr from-emerald-500/20 to-transparent">
+             <div className="p-1 rounded-2xl bg-gradient-to-tr from-[#00D084]/20 to-transparent">
                <img 
                  src={activeChat?.isGroup ? activeChat.groupMetadata?.photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${activeChat.groupMetadata?.name}` : otherParticipant?.photoURL} 
                  alt="Chat" 
-                 className="w-11 h-11 rounded-2xl object-cover border border-white/5 ring-1 ring-white/10"
+                 className="w-12 h-12 rounded-2xl object-cover border border-white/10 shadow-lg"
                />
              </div>
              {isOnline && (
-               <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white dark:border-[#0B0E11]" />
+               <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-[#00D084] rounded-full border-2 border-[#2B3040] shadow-neon-green" />
              )}
           </div>
           <div className="flex flex-col">
-            <h3 className="text-black dark:text-white text-base font-black tracking-tight font-display truncate max-w-[120px] sm:max-w-none">
+            <h3 className="text-white text-base font-black tracking-tight font-display truncate max-w-[120px] sm:max-w-none">
               {activeChat?.isGroup ? activeChat.groupMetadata?.name : otherParticipant?.displayName}
             </h3>
             <div className="flex items-center gap-2 mt-0.5">
-              <span className={cn("text-[10px] font-black uppercase tracking-widest font-mono", isOnline || isTyping ? "text-emerald-500" : "text-black/20 dark:text-white/20")}>
-                {isTyping ? 'SIGNAL: TYPING' : (isOnline ? 'SIGNAL: ONLINE' : 'SIGNAL: OFFLINE')}
+              <div className={cn("w-1.5 h-1.5 rounded-full animate-pulse", isOnline || isTyping ? "bg-[#00D084] shadow-neon-green" : "bg-white/20")} />
+              <span className={cn("text-[9px] font-black uppercase tracking-[0.2em] font-mono", isOnline || isTyping ? "text-[#00D084]" : "text-white/20")}>
+                {isTyping ? 'SIGNAL: TYPING' : (isOnline ? 'SIGNAL: ACTIVE' : 'SIGNAL: DISCONNECTED')}
               </span>
             </div>
           </div>
         </div>
         
-        <div className="flex items-center gap-1 sm:gap-2">
+        <div className="flex items-center gap-1 sm:gap-3">
             <AnimatePresence>
                 {showSearch ? (
                    <motion.div 
@@ -243,25 +244,25 @@ export default function ChatArea() {
                        autoFocus
                        value={searchQuery}
                        onChange={(e) => setSearchQuery(e.target.value)}
-                       placeholder="Search inside stream..."
-                       className="w-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-xl py-2 pl-4 pr-10 text-xs font-bold outline-none focus:border-emerald-500/30 transition-all"
+                       placeholder="Scan logs..."
+                       className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pl-4 pr-10 text-xs font-bold outline-none focus:border-[#00D084]/50 transition-all text-white"
                      />
-                     <button onClick={() => { setShowSearch(false); setSearchQuery(''); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-black/40 dark:text-white/40">
+                     <button onClick={() => { setShowSearch(false); setSearchQuery(''); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40">
                        <X size={14} />
                      </button>
                    </motion.div>
                 ) : (
-                  <button onClick={() => setShowSearch(true)} className="p-2.5 text-black/40 dark:text-white/40 hover:text-emerald-500 transition-all">
+                  <button onClick={() => setShowSearch(true)} className="p-2.5 text-white/40 hover:text-[#00D084] hover:bg-white/5 rounded-xl transition-all">
                     <Search size={20} />
                   </button>
                 )}
             </AnimatePresence>
 
-          <button onClick={() => otherParticipant && startCall(otherParticipant, 'voice')} className="p-2.5 text-black/40 dark:text-white/40 hover:text-emerald-500 hover:bg-emerald-500/10 rounded-2xl transition-all"><Phone size={20} /></button>
-          <button onClick={() => otherParticipant && startCall(otherParticipant, 'video')} className="p-2.5 text-black/40 dark:text-white/40 hover:text-emerald-500 hover:bg-emerald-500/10 rounded-2xl transition-all"><Video size={20} /></button>
+          <button onClick={() => otherParticipant && startCall(otherParticipant, 'voice')} className="p-2.5 text-white/40 hover:text-[#00D084] hover:bg-[#00D084]/10 rounded-xl transition-all"><Phone size={20} /></button>
+          <button onClick={() => otherParticipant && startCall(otherParticipant, 'video')} className="p-2.5 text-white/40 hover:text-[#00D084] hover:bg-[#00D084]/10 rounded-xl transition-all"><Video size={20} /></button>
           
           <div className="relative group/menu">
-            <button className="p-2.5 text-black/40 dark:text-white/40 hover:text-emerald-500 hover:bg-emerald-500/10 rounded-2xl transition-all">
+            <button className="p-2.5 text-white/40 hover:text-[#00D084] hover:bg-white/5 rounded-xl transition-all">
               <MoreVertical size={20} />
             </button>
             <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-[#1f2937] rounded-2xl shadow-2xl border border-black/5 dark:border-white/5 py-2 hidden group-hover/menu:block z-[100] backdrop-blur-xl">
@@ -414,7 +415,7 @@ export default function ChatArea() {
       </div>
 
       {/* Input Area / Action Terminal */}
-      <div className="bg-white dark:bg-[#0B0E11] z-30 relative border-t border-black/5 dark:border-white/5">
+      <div className="bg-[#2B3040] z-30 relative border-t border-white/10">
         
         {/* Hidden File Input */}
         <input 
@@ -431,23 +432,23 @@ export default function ChatArea() {
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
-                    className="px-6 py-3 bg-emerald-500/5 border-b border-emerald-500/20 flex items-center justify-between"
+                    className="px-6 py-3 bg-[#00D084]/5 border-b border-[#00D084]/20 flex items-center justify-between"
                 >
                     <div className="flex items-center gap-3">
-                        <div className="w-1 h-8 bg-emerald-500 rounded-full" />
+                        <div className="w-1 h-8 bg-[#00D084] rounded-full" />
                         <div className="flex flex-col">
-                            <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 tracking-widest uppercase">Replying to Signal</span>
-                            <p className="text-xs text-black/60 dark:text-white/60 line-clamp-1 italic">{replyingTo.text}</p>
+                            <span className="text-[10px] font-black text-[#00D084] tracking-widest uppercase">Replying to Signal</span>
+                            <p className="text-xs text-[#D1D5DB] line-clamp-1 italic">{replyingTo.text}</p>
                         </div>
                     </div>
-                    <button onClick={() => setReplyingTo(null)} className="p-1.5 hover:bg-emerald-500/10 rounded-full text-emerald-500 transition-all">
+                    <button onClick={() => setReplyingTo(null)} className="p-1.5 hover:bg-[#00D084]/10 rounded-full text-[#00D084] transition-all">
                         <X size={16} />
                     </button>
                 </motion.div>
             )}
         </AnimatePresence>
 
-        <div className="px-4 lg:px-8 py-4 max-w-screen-xl mx-auto space-y-4">
+        <div className="px-4 lg:px-8 py-5 max-w-screen-xl mx-auto space-y-4">
             <AnimatePresence>
               {showActions && (
                 <QuickActionPanel 
@@ -472,20 +473,20 @@ export default function ChatArea() {
               />
             )}
             
-            <div className="flex items-center gap-3">
-                <div className="flex items-center gap-1 bg-black/5 dark:bg-white/5 rounded-2xl p-1">
-                    <button onClick={() => setShowEmoji(!showEmoji)} className={cn("p-2 text-black/40 dark:text-white/40 hover:text-emerald-500 transition-all relative group", showEmoji && "text-emerald-500")}>
+            <div className="flex items-center gap-4">
+                <div className="flex items-center gap-1 bg-white/5 rounded-2xl p-1 border border-white/5">
+                    <button onClick={() => setShowEmoji(!showEmoji)} className={cn("p-2.5 text-white/40 hover:text-[#00D084] transition-all relative group", showEmoji && "text-[#00D084]")}>
                         <Smile size={24} />
                         {showEmoji && (
                             <div className="absolute bottom-16 left-0 z-50">
                                <EmojiPicker 
                                   onEmojiClick={(e) => setInputText(prev => prev + e.emoji)} 
-                                  theme={settings.theme === 'dark' ? EmojiTheme.DARK : EmojiTheme.LIGHT}
+                                  theme={EmojiTheme.DARK}
                                />
                             </div>
                         )}
                     </button>
-                    <button onClick={() => setShowActions(!showActions)} className={cn("p-2 text-black/40 dark:text-white/40 hover:text-emerald-500 transition-all group", showActions && "text-emerald-500 rotate-45")}>
+                    <button onClick={() => setShowActions(!showActions)} className={cn("p-2.5 text-white/40 hover:text-[#00D084] transition-all group", showActions && "text-[#00D084] rotate-45")}>
                         <Plus size={24} />
                     </button>
                 </div>
@@ -503,7 +504,7 @@ export default function ChatArea() {
                             e.target.style.height = 'auto';
                             e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
                         }}
-                        className="w-full bg-black/[0.03] dark:bg-white/[0.03] border border-black/5 dark:border-white/5 rounded-2xl py-3.5 px-6 text-sm focus:outline-none focus:border-emerald-500/50 text-black dark:text-white transition-all scrollbar-none resize-none min-h-[48px]"
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-sm focus:outline-none focus:border-[#00D084]/50 text-white transition-all scrollbar-none resize-none min-h-[52px] placeholder-[#9CA3AF] shadow-inner"
                     />
                     <AnimatePresence>
                         {inputText.length > 5 && (
@@ -514,8 +515,8 @@ export default function ChatArea() {
                                 onClick={handlePolish}
                                 disabled={isPolishing}
                                 className={cn(
-                                    "absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-xl transition-all",
-                                    isPolishing ? "bg-emerald-500/20 text-emerald-500 animate-pulse" : "text-black/20 dark:text-white/20 hover:text-emerald-500 hover:bg-emerald-500/10"
+                                    "absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-xl transition-all",
+                                    isPolishing ? "bg-[#00D084]/20 text-[#00D084] animate-pulse" : "text-white/20 hover:text-[#00D084] hover:bg-[#00D084]/10"
                                 )}
                              >
                                 <Sparkles size={18} />
@@ -528,12 +529,12 @@ export default function ChatArea() {
                     {inputText.trim() ? (
                         <button 
                             onClick={() => handleSend()}
-                            className="w-12 h-12 rounded-[1.2rem] bg-emerald-600 text-white flex items-center justify-center hover:bg-emerald-500 transition-all active:scale-95 shadow-xl shadow-emerald-500/20"
+                            className="w-13 h-13 rounded-2xl bg-[#00D084] text-white flex items-center justify-center hover:bg-[#00D084]/90 transition-all active:scale-95 shadow-xl shadow-[#00D084]/20"
                         >
-                            <Send size={20} />
+                            <Send size={22} />
                         </button>
                     ) : (
-                        <button className="w-12 h-12 rounded-[1.2rem] bg-black/5 dark:bg-white/5 text-black/20 dark:text-white/20 hover:text-emerald-500 transition-all flex items-center justify-center group active:scale-95">
+                        <button className="w-13 h-13 rounded-2xl bg-white/5 text-white/40 hover:text-[#00D084] transition-all flex items-center justify-center group active:scale-95 border border-white/5">
                             <Mic size={24} />
                         </button>
                     )}

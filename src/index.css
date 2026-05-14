@@ -20,17 +20,22 @@
   }
 
   .dark {
-    --wa-dark-bg: #0B0E11;
-    --color-glass: rgba(17, 24, 39, 0.8);
-    --color-glass-border: rgba(255, 255, 255, 0.06);
+    --wa-dark-bg: #2B3040;
+    --color-glass: rgba(255, 255, 255, 0.06);
+    --color-glass-border: rgba(255, 255, 255, 0.12);
     --scrollbar-thumb: rgba(255, 255, 255, 0.1);
-    --mesh-color-1: rgba(6, 78, 59, 0.3);
-    --mesh-color-2: rgba(16, 185, 129, 0.2);
-    --mesh-color-3: rgba(6, 95, 70, 0.2);
-    --text-primary: #F8FAFC;
-    --text-secondary: #94A3B8;
-    --surface-content: #111827;
-    --shadow-main: 0 30px 100px rgba(0, 0, 0, 0.4);
+    --mesh-color-1: rgba(0, 208, 132, 0.15);
+    --mesh-color-2: rgba(37, 99, 255, 0.15);
+    --mesh-color-3: rgba(0, 208, 132, 0.1);
+    --text-primary: #FFFFFF;
+    --text-secondary: #D1D5DB;
+    --text-muted: #9CA3AF;
+    --text-placeholder: #9CA3AF;
+    --surface-content: #3A4052;
+    --shadow-main: 0 30px 100px rgba(0, 0, 0, 0.5);
+    --primary-blue: #2563FF;
+    --accent-green: #00D084;
+    --accent-blue: #2563FF;
   }
 
   .font-size-small { --font-size-base: 12px; }
@@ -55,9 +60,11 @@
   --font-mono: "JetBrains Mono", monospace;
   --color-glass: var(--color-glass);
   --color-glass-border: var(--color-glass-border);
-  --color-accent-green: #10B981;
-  --color-accent-dark-green: #064e3b;
+  --color-accent-green: var(--accent-green);
+  --color-accent-blue: var(--accent-blue);
   --animate-typing: typing 1.4s infinite;
+  --shadow-neon-green: 0 0 15px rgba(0, 208, 132, 0.5);
+  --shadow-neon-blue: 0 0 15px rgba(37, 99, 255, 0.5);
 }
 
 @keyframes typing {

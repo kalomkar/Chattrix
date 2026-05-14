@@ -58,7 +58,7 @@ export default function MainLayout() {
 
       {/* 2. Middle Panel (Chats, List, etc.) */}
       <div className={cn(
-        "flex-col glass rounded-[2.2rem] sm:rounded-[2.8rem] overflow-hidden z-20 border border-black/5 dark:border-white/[0.05] relative transition-all duration-500 shrink-0",
+        "flex flex-col bg-[#3A4052]/40 rounded-[2.2rem] sm:rounded-[2.8rem] overflow-hidden z-20 border border-white/10 relative transition-all duration-500 shrink-0 backdrop-blur-3xl",
         activeChat && activeTab === 'chats' ? "hidden lg:flex w-[420px]" : "flex w-full md:w-[360px] lg:w-[420px]"
       )}>
         <AnimatePresence mode="wait">
@@ -226,9 +226,10 @@ export default function MainLayout() {
                initial={{ opacity: 0, scale: 0.95 }}
                animate={{ opacity: 1, scale: 1 }}
                exit={{ opacity: 0, scale: 0.95 }}
-               className="h-full w-full flex flex-col items-center justify-center text-center p-12 bg-transparent relative overflow-hidden"
+               className="h-full w-full flex flex-col items-center justify-center text-center p-12 bg-gradient-to-b from-[#3A4052]/30 to-[#2B3040]/10 relative overflow-hidden rounded-[3.2rem] shadow-[inset_0_0_1px_1px_rgba(255,255,255,0.1)]"
             >
-               <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/[0.03] to-transparent pointer-events-none" />
+               <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-5 pointer-events-none" />
+               <div className="absolute inset-0 bg-gradient-to-br from-[#00D084]/5 via-transparent to-[#2563FF]/5 pointer-events-none" />
                
                <motion.div
                  initial={{ opacity: 0, scale: 0.8 }}
@@ -256,33 +257,33 @@ export default function MainLayout() {
                  transition={{ delay: 0.2 }}
                  className="relative z-10"
                >
-                 <h2 className="text-5xl font-[900] text-black dark:text-white tracking-tighter mb-6 font-display">CHATTRIX CORE</h2>
-                 <p className="text-black/20 dark:text-white/20 text-xs font-black uppercase tracking-[0.4em] max-w-sm mx-auto leading-relaxed mb-16">
+                 <h2 className="text-5xl font-[900] text-transparent bg-clip-text bg-gradient-to-b from-white to-[#D1D5DB] tracking-tighter mb-6 font-display drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)]">CHATTRIX CORE</h2>
+                 <p className="text-[#E5E7EB] text-sm font-medium tracking-[0.2em] max-w-sm mx-auto leading-relaxed mb-16 drop-shadow-md">
                    Establish a secure crypt-link via the global neural network.
                  </p>
                  
                  <button 
                    onClick={() => setShowAddContact(true)}
-                   className="group relative px-12 py-6 bg-emerald-600 hover:bg-emerald-500 text-white rounded-[2.5rem] font-black text-sm uppercase tracking-widest transition-all shadow-[0_20px_50px_rgba(16,185,129,0.2)] active:scale-95 flex items-center gap-4 mx-auto overflow-hidden"
+                   className="group relative px-12 py-6 bg-[#00D084] hover:bg-[#00D084]/90 text-white rounded-[2.5rem] font-black text-sm uppercase tracking-widest transition-all shadow-[0_0_30px_rgba(0,208,132,0.4)] active:scale-95 flex items-center gap-4 mx-auto overflow-hidden border border-[#00D084]/30"
                  >
                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
                    <Plus size={24} className="group-hover:rotate-90 transition-transform duration-500" />
                    Initiate Sync
-                   <Sparkles size={18} className="text-emerald-200" />
+                   <Sparkles size={18} className="text-white" />
                  </button>
                </motion.div>
                
-               <div className="absolute bottom-16 flex items-center gap-12 text-[9px] font-black uppercase tracking-[0.4em] text-black/10 dark:text-white/10 select-none font-mono">
+               <div className="absolute bottom-16 flex items-center gap-12 text-[9px] font-black uppercase tracking-[0.4em] text-[#9CA3AF] select-none font-mono">
                   <div className="flex items-center gap-3">
-                     <div className="w-1 h-1 bg-emerald-500 rounded-full animate-ping" />
+                     <div className="w-1 h-1 bg-[#00D084] rounded-full animate-ping" />
                      <span>SYSTEM: ONLINE</span>
                   </div>
                   <div className="flex items-center gap-3">
-                     <div className="w-1 h-1 bg-emerald-500 rounded-full animate-ping delay-300" />
+                     <div className="w-1 h-1 bg-[#00D084] rounded-full animate-ping delay-300" />
                      <span>SECURE: E2EE</span>
                   </div>
                   <div className="flex items-center gap-3">
-                     <div className="w-1 h-1 bg-emerald-500 rounded-full animate-ping delay-700" />
+                     <div className="w-1 h-1 bg-[#00D084] rounded-full animate-ping delay-700" />
                      <span>ENCRYPTION: AES-256</span>
                   </div>
                </div>
