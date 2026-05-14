@@ -39,7 +39,7 @@ function AppContent() {
   }
 
   return (
-    <div className="h-screen w-full bg-gray-100 dark:bg-[#0B0E11] overflow-hidden selection:bg-emerald-500/30 transition-colors duration-300">
+    <div className="dark h-screen w-full bg-[#0f1117] overflow-hidden selection:bg-emerald-500/30 transition-colors duration-300">
       {currentUser ? (
         <ChatProvider>
           <StoryProvider>

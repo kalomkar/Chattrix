@@ -41,33 +41,33 @@ export default function SettingsPanel() {
   const handleBack = () => setActivePath(null);
 
   return (
-    <div className="flex-1 h-full flex flex-col overflow-hidden">
+    <div className="flex-1 h-full flex flex-col overflow-hidden bg-[#0f1117] text-white">
       {/* Header */}
-      <div className="p-8 border-b border-black/5 dark:border-white/5 bg-black/[0.02] dark:bg-white/[0.02]">
+      <div className="p-8 border-b border-white/5 bg-[#1a1d26]/50">
         <div className="flex items-center justify-between mb-8">
            <div>
-              <h1 className="text-3xl font-black text-black dark:text-white tracking-tighter">Settings</h1>
-              <p className="text-black/30 dark:text-white/30 text-xs font-bold uppercase tracking-[0.2em] mt-1">Chattrix Configuration Suite</p>
+              <h1 className="text-3xl font-black tracking-tighter">Settings</h1>
+              <p className="text-white/40 text-xs font-bold uppercase tracking-[0.2em] mt-1">Chattrix Configuration</p>
            </div>
-           <div className="w-12 h-12 rounded-2xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center text-blue-500 dark:text-blue-400">
+           <div className="w-12 h-12 rounded-2xl bg-[#00d26a]/10 border border-[#00d26a]/20 flex items-center justify-center text-[#00d26a]">
               <SettingsIcon size={24} />
            </div>
         </div>
 
         {/* Mini Profile Card */}
-        <div className="p-4 rounded-[2rem] glass border border-black/10 dark:border-white/10 flex items-center gap-4 transition-all hover:bg-black/5 dark:hover:bg-white/5">
+        <div className="p-4 rounded-[2rem] bg-[#1a1d26] border border-white/5 flex items-center gap-4 transition-all hover:border-[#00d26a]/20">
            <img 
-            src={currentUser?.photoURL} 
+            src={currentUser?.photoURL || ''} 
             alt="User" 
-            className="w-14 h-14 rounded-full border-2 border-blue-500/20"
+            className="w-14 h-14 rounded-full border-2 border-[#00d26a]/20"
            />
            <div className="flex-1">
-              <h3 className="text-black dark:text-white font-bold">{currentUser?.displayName}</h3>
-              <p className="text-black/40 dark:text-white/40 text-xs truncate max-w-[200px]">{currentUser?.email || currentUser?.phoneNumber}</p>
+              <h3 className="font-bold">{currentUser?.displayName}</h3>
+              <p className="text-white/40 text-xs truncate max-w-[200px]">{currentUser?.email || currentUser?.phoneNumber}</p>
            </div>
            <button 
             onClick={() => setActivePath('account')}
-            className="w-10 h-10 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white transition-colors"
+            className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-white/40 hover:text-white transition-colors"
            >
               <ChevronRight size={20} />
            </button>
@@ -75,7 +75,7 @@ export default function SettingsPanel() {
       </div>
 
       {/* Main Settings List */}
-      <div className="flex-1 overflow-y-auto no-scrollbar p-8">
+      <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
         <AnimatePresence mode="wait">
           {!activePath ? (
             <motion.div 
@@ -89,19 +89,19 @@ export default function SettingsPanel() {
                 <button
                   key={section.id}
                   onClick={() => setActivePath(section.id)}
-                  className="group p-5 rounded-[2rem] glass border border-black/5 dark:border-white/5 flex items-center gap-5 transition-all hover:bg-black/[0.04] dark:hover:bg-white/[0.04] hover:border-black/10 dark:hover:border-white/10 text-left"
+                  className="group p-5 rounded-[2rem] bg-[#1a1d26] border border-white/5 flex items-center gap-5 transition-all hover:border-[#00d26a]/30 text-left"
                 >
                   <div className={cn(
-                    "w-12 h-12 rounded-2xl bg-black/[0.03] dark:bg-white/[0.03] flex items-center justify-center transition-all group-hover:scale-110",
+                    "w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center transition-all group-hover:scale-110",
                     section.color
                   )}>
                     <section.icon size={22} />
                   </div>
                   <div className="flex-1">
-                    <h4 className="text-black dark:text-white font-bold text-sm tracking-tight">{section.label}</h4>
-                    <p className="text-black/30 dark:text-white/30 text-[11px] font-medium leading-tight mt-0.5">{section.description}</p>
+                    <h4 className="font-bold text-sm tracking-tight">{section.label}</h4>
+                    <p className="text-white/40 text-[11px] font-medium leading-tight mt-0.5">{section.description}</p>
                   </div>
-                  <ChevronRight size={18} className="text-black/10 dark:text-white/10 group-hover:text-black/40 dark:group-hover:text-white/40 group-hover:translate-x-1 transition-all" />
+                  <ChevronRight size={18} className="text-white/10 group-hover:text-[#00d26a] group-hover:translate-x-1 transition-all" />
                 </button>
               ))}
               
@@ -114,7 +114,7 @@ export default function SettingsPanel() {
                 </div>
                 <div className="flex-1">
                   <h4 className="text-red-400 font-bold text-sm">Logout</h4>
-                  <p className="text-red-400/40 text-[11px] font-medium">Terminate session on this device</p>
+                  <p className="text-red-400/40 text-[11px] font-medium">Terminate session</p>
                 </div>
               </button>
             </motion.div>
@@ -128,12 +128,12 @@ export default function SettingsPanel() {
             >
               <button 
                 onClick={handleBack}
-                className="flex items-center gap-2 text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white transition-colors mb-8 group"
+                className="flex items-center gap-2 text-white/40 hover:text-white transition-colors mb-8 group"
               >
-                <div className="w-8 h-8 rounded-full bg-black/5 dark:bg-white/5 flex items-center justify-center group-hover:bg-blue-600 transition-all">
+                <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-[#00d26a] transition-all">
                    <ChevronRight size={16} className="rotate-180" />
                 </div>
-                <span className="text-sm font-bold uppercase tracking-widest">Back to settings</span>
+                <span className="text-sm font-bold uppercase tracking-widest">Back</span>
               </button>
 
               <SettingsContent path={activePath} />
@@ -271,10 +271,10 @@ function SettingsContent({ path }: { path: string }) {
 function SettingsHeader({ title, icon: Icon, color }: { title: string, icon: any, color: string }) {
   return (
     <div className="flex items-center gap-4 mb-4">
-       <div className={cn("p-3 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10", color)}>
+       <div className={cn("p-3 rounded-2xl bg-white/5 border border-white/5", color)}>
           <Icon size={24} />
        </div>
-       <h2 className="text-xl font-black text-black dark:text-white">{title}</h2>
+       <h2 className="text-xl font-black">{title}</h2>
     </div>
   );
 }
@@ -282,8 +282,8 @@ function SettingsHeader({ title, icon: Icon, color }: { title: string, icon: any
 function SettingsGroup({ title, children }: { title: string, children: React.ReactNode }) {
   return (
     <div className="space-y-2">
-       <label className="text-[10px] font-black uppercase tracking-widest text-black/20 dark:text-white/20 ml-4">{title}</label>
-       <div className="glass border border-black/5 dark:border-white/5 rounded-[2rem] overflow-hidden">
+       <label className="text-[10px] font-black uppercase tracking-widest text-white/20 ml-4">{title}</label>
+       <div className="bg-[#1a1d26] border border-white/5 rounded-[2rem] overflow-hidden">
           {children}
        </div>
     </div>
@@ -292,11 +292,11 @@ function SettingsGroup({ title, children }: { title: string, children: React.Rea
 
 function ToggleOption({ label, enabled, onToggle }: { label: string, enabled: boolean, onToggle: () => void }) {
   return (
-    <div className="p-4 flex items-center justify-between hover:bg-black/5 dark:hover:bg-white/5 transition-all">
-       <span className="text-sm font-bold text-black dark:text-white">{label}</span>
+    <div className="p-4 flex items-center justify-between hover:bg-white/5 transition-all">
+       <span className="text-sm font-bold">{label}</span>
        <button 
         onClick={onToggle}
-        className={cn("w-12 h-6 rounded-full p-1 relative transition-colors", enabled ? "bg-blue-600" : "bg-black/10 dark:bg-white/10")}
+        className={cn("w-12 h-6 rounded-full p-1 relative transition-colors", enabled ? "bg-[#00d26a]" : "bg-white/10")}
        >
           <motion.div animate={{ x: enabled ? 24 : 0 }} className="w-4 h-4 bg-white rounded-full shadow-sm" />
        </button>
@@ -306,14 +306,14 @@ function ToggleOption({ label, enabled, onToggle }: { label: string, enabled: bo
 
 function SelectOption({ label, options, value, onSelect }: { label: string, options: string[], value: string, onSelect?: (v: string) => void }) {
   return (
-    <div className="p-4 flex items-center justify-between hover:bg-black/5 dark:hover:bg-white/5 transition-all">
-       <span className="text-sm font-bold text-black dark:text-white">{label}</span>
+    <div className="p-4 flex items-center justify-between hover:bg-white/5 transition-all">
+       <span className="text-sm font-bold">{label}</span>
        <div className="flex gap-2">
           {options.map(opt => (
             <button 
               key={opt} 
               onClick={() => onSelect?.(opt)}
-              className={cn("px-3 py-1 rounded-lg text-[10px] font-bold uppercase transition-all", opt === value ? "bg-blue-600 text-white" : "bg-black/5 dark:bg-white/5 text-black/40 dark:text-white/40 hover:bg-black/10 dark:hover:bg-white/10")}
+              className={cn("px-3 py-1 rounded-lg text-[10px] font-bold uppercase transition-all", opt === value ? "bg-[#00d26a] text-white" : "bg-white/5 text-white/40 hover:bg-white/10")}
             >
                {opt}
             </button>
@@ -326,14 +326,14 @@ function SelectOption({ label, options, value, onSelect }: { label: string, opti
 function InputGroup({ label, value, disabled = false, onChange }: { label: string, value: string, disabled?: boolean, onChange?: (val: string) => void }) {
   return (
     <div className="p-4 space-y-1">
-       <label className="text-[9px] font-black uppercase text-black/20 dark:text-white/20">{label}</label>
+       <label className="text-[9px] font-black uppercase text-white/20">{label}</label>
        <input 
          type="text" 
          value={value} 
          disabled={disabled} 
          readOnly={!onChange}
          onChange={(e) => onChange?.(e.target.value)}
-         className="w-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-xl px-4 py-2 text-black dark:text-white disabled:opacity-50 focus:outline-none focus:border-blue-500/50 transition-all font-bold" 
+         className="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-2 text-white disabled:opacity-50 focus:outline-none focus:border-[#00d26a]/50 transition-all font-bold" 
        />
     </div>
   );
