@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   User, Shield, Lock, Bell, MessageSquare, Palette, Share2, 
   Smartphone, Database, Code, LogOut, ChevronRight, Check, X,
@@ -8,8 +8,7 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
-import { auth, db } from '../../lib/firebase';
-import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import api from '../../services/api';
 import { cn } from '../../lib/utils';
 
 interface Section {
@@ -35,7 +34,7 @@ const SECTIONS: Section[] = [
 ];
 
 export default function SettingsPanel() {
-  const { currentUser } = useAuth();
+  const { currentUser, logout } = useAuth();
   const [activePath, setActivePath] = useState<string | null>(null);
 
   const handleBack = () => setActivePath(null);
@@ -106,7 +105,7 @@ export default function SettingsPanel() {
               ))}
               
               <button
-                onClick={() => auth.signOut()}
+                onClick={logout}
                 className="col-span-full mt-4 p-5 rounded-[2rem] bg-red-500/10 border border-red-500/10 flex items-center gap-5 transition-all hover:bg-red-500/20 text-left group"
               >
                 <div className="w-12 h-12 rounded-2xl bg-red-500/10 flex items-center justify-center text-red-400 group-hover:scale-110 transition-all">
@@ -146,15 +145,35 @@ export default function SettingsPanel() {
 }
 
 function SettingsContent({ path }: { path: string }) {
-  const { currentUser } = useAuth();
+  const { currentUser, updateProfile, logout } = useAuth();
   const { settings, updateSetting, resetSettings } = useSettings();
   
-   const [autoReplyMessage, setAutoReplyMessage] = useState(currentUser?.autoReply?.message || '');
+  const [autoReplyMessage, setAutoReplyMessage] = useState(currentUser?.autoReply?.message || '');
+
+  useEffect(() => {
+    if (currentUser?.autoReply?.message) {
+      setAutoReplyMessage(currentUser.autoReply.message);
+    }
+  }, [currentUser?.autoReply?.message]);
 
   const handleUpdateAccount = async (data: any) => {
     if (!currentUser) return;
     try {
-      await updateDoc(doc(db, 'users', currentUser.uid), data);
+      // Handle nested keys like 'ghostMode.hideOnline' correctly if the backend supports it, 
+      // or reconstruct the object here.
+      let updateData = data;
+      
+      // Check if we are updating a nested field
+      const key = Object.keys(data)[0];
+      if (key.includes('.')) {
+        const [parent, child] = key.split('.');
+        const parentObj = { ...(currentUser as any)[parent] };
+        parentObj[child] = data[key];
+        updateData = { [parent]: parentObj };
+      }
+
+      const res = await api.put('/user/profile', updateData);
+      updateProfile(res.data);
     } catch (err) {
       console.error(err);
     }

@@ -1,61 +1,56 @@
 import React, { useState } from 'react';
-import { 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword, 
-  updateProfile,
-  sendEmailVerification
-} from 'firebase/auth';
-import { auth } from '../../lib/firebase';
-import { MessageCircle, Mail, Lock, User, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import { MessageCircle, Mail, Lock, User, Eye, EyeOff, CheckCircle2, Phone, Hash } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../../lib/utils';
-import { GoogleAuthProvider, signInWithPopup, GithubAuthProvider } from 'firebase/auth';
-
-const googleProvider = new GoogleAuthProvider();
-const githubProvider = new GithubAuthProvider();
 
 export default function AuthPage() {
-  const [isLogin, setIsLogin] = useState(true);
+  const { login, register } = useAuth();
+  const [mode, setMode] = useState<'login' | 'register' | 'forgot'>('login');
+  
+  // Fields
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [displayName, setDisplayName] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [username, setUsername] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [verificationSent, setVerificationSent] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [captchaVerified, setCaptchaVerified] = useState(false);
 
-  const handleEmailSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isLogin && password !== confirmPassword) {
+    setError('');
+    
+    if (mode === 'register' && password !== confirmPassword) {
       setError("Passwords do not match");
       return;
     }
-    setError('');
+
+    if (mode !== 'forgot' && !captchaVerified) {
+      setError("Please verify the CAPTCHA");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      if (isLogin) {
-        await signInWithEmailAndPassword(auth, email, password);
-      } else {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        await updateProfile(userCredential.user, { displayName });
-        await sendEmailVerification(userCredential.user);
-        setVerificationSent(true);
+      if (mode === 'login') {
+        await login({ loginIdentifier: email || username, password });
+      } else if (mode === 'register') {
+        await register({ fullName, username, email, phoneNumber, password });
+        setSuccessMessage("Registration successful! Please check your email to verify your account.");
+      } else if (mode === 'forgot') {
+        const api = (await import('../../services/api')).default;
+        await api.post('/auth/forgot-password', { email });
+        setSuccessMessage("Reset link sent to your email. Please check your inbox.");
       }
     } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSocialLogin = async (provider: any) => {
-    try {
-      setLoading(true);
-      await signInWithPopup(auth, provider);
-    } catch (err: any) {
-      setError(err.message);
+      setError(err.response?.data?.error || err.response?.data?.errors?.[0]?.msg || "An error occurred");
     } finally {
       setLoading(false);
     }
@@ -83,9 +78,9 @@ export default function AuthPage() {
           />
           <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03]" />
       </div>
-
+      
       <div className="w-full max-w-[1000px] grid md:grid-cols-2 gap-12 items-center z-10">
-          {/* Left Side: Branding / Marketing */}
+          {/* Left Side: Branding */}
           <div className="hidden md:block py-10">
               <motion.div 
                 initial={{ opacity: 0, x: -20 }}
@@ -96,16 +91,16 @@ export default function AuthPage() {
                     Welcome to <span className="text-[#00d26a]">Chattrix</span>.
                   </h1>
                   <p className="text-xl text-[#b3b3b3] mb-8 leading-relaxed max-w-md">
-                    Experience the future of communication. Secure, private, and powered by neural networks.
+                    The most secure and premium chat experience, now powered by advanced SQL backend and JWT protocols.
                   </p>
                   <div className="flex gap-4">
                       <div className="bg-[#1a1d26] p-4 rounded-2xl border border-white/5 w-40">
-                          <p className="text-[#00d26a] font-black text-2xl">100%</p>
-                          <p className="text-xs text-[#b3b3b3] uppercase tracking-widest font-bold">Secure</p>
+                          <p className="text-[#00d26a] font-black text-2xl">SQL</p>
+                          <p className="text-xs text-[#b3b3b3] uppercase tracking-widest font-bold">Reliable</p>
                       </div>
                       <div className="bg-[#1a1d26] p-4 rounded-2xl border border-white/5 w-40">
-                          <p className="text-[#2563FF] font-black text-2xl">Ultra</p>
-                          <p className="text-xs text-[#b3b3b3] uppercase tracking-widest font-bold">Fast</p>
+                          <p className="text-[#2563FF] font-black text-2xl">JWT</p>
+                          <p className="text-xs text-[#b3b3b3] uppercase tracking-widest font-bold">Secure</p>
                       </div>
                   </div>
               </motion.div>
@@ -115,10 +110,10 @@ export default function AuthPage() {
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full max-w-[440px] p-8 md:p-10 rounded-[32px] bg-[#1a1d26]/60 backdrop-blur-2xl border border-white/10 shadow-2xl mx-auto md:mx-0"
+            transition={{ duration: 0.5 }}
+            className="w-full max-w-[480px] p-8 md:p-10 rounded-[32px] bg-[#1a1d26]/60 backdrop-blur-2xl border border-white/10 shadow-2xl mx-auto md:mx-0 overflow-y-auto max-h-[90vh] custom-scrollbar"
           >
-            <div className="text-center mb-10">
+            <div className="text-center mb-8">
               <motion.div 
                 whileHover={{ scale: 1.05 }}
                 className="w-16 h-16 bg-[#00d26a]/10 rounded-2xl flex items-center justify-center mx-auto mb-6 ring-1 ring-[#00d26a]/20"
@@ -126,102 +121,141 @@ export default function AuthPage() {
                 <MessageCircle className="text-[#00d26a] w-8 h-8" />
               </motion.div>
               <h2 className="text-2xl font-black tracking-tight mb-2">
-                {isLogin ? "Sign In" : "Get Started"}
+                {mode === 'login' ? "Sign In" : mode === 'register' ? "Create Account" : "Reset Password"}
               </h2>
               <p className="text-[#b3b3b3] text-sm">
-                Enter your credentials to continue.
+                {mode === 'login' ? "Access your premium dashboard." : mode === 'register' ? "Join the luxury communication suite." : "Recover your security access."}
               </p>
             </div>
 
-        <AnimatePresence mode="wait">
-          {verificationSent ? (
-            <motion.div
-              key="verification-sent"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-center py-6"
-            >
-              <CheckCircle2 className="text-[#00d26a] w-16 h-16 mx-auto mb-6" />
-              <h2 className="text-2xl font-bold mb-3">Check your inbox</h2>
-              <p className="text-[#b3b3b3] text-sm mb-8">Verification link sent to {email}</p>
-              <button onClick={() => setVerificationSent(false)} className="text-[#00d26a] font-bold">Back to Login</button>
-            </motion.div>
-          ) : (
-            <motion.form 
-              key="auth-form"
-              onSubmit={handleEmailSubmit} 
-              className="space-y-4"
-            >
-              {!isLogin && (
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase text-[#b3b3b3] ml-1">Full Name</label>
-                  <div className="relative">
-                    <User className="absolute left-4 top-4 text-white/20" size={18} />
-                    <input type="text" required value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="w-full bg-[#0f1117] border border-white/5 rounded-xl p-4 pl-12 text-sm focus:border-[#00d26a]/50 outline-none transition-all" placeholder="John Doe" />
+            <AnimatePresence mode="wait">
+              {successMessage ? (
+                <motion.div
+                  key="success"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-center py-6"
+                >
+                  <CheckCircle2 className="text-[#00d26a] w-16 h-16 mx-auto mb-6" />
+                  <h2 className="text-2xl font-bold mb-3">Protocol Executed</h2>
+                  <p className="text-[#b3b3b3] text-sm mb-8">{successMessage}</p>
+                  <button onClick={() => { setSuccessMessage(''); setMode('login'); }} className="text-[#00d26a] font-black uppercase text-sm">Return to Login</button>
+                </motion.div>
+              ) : (
+                <motion.form key="form" onSubmit={handleSubmit} className="space-y-4">
+                  {mode === 'register' && (
+                    <>
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold uppercase text-[#b3b3b3] ml-1">Full Name</label>
+                        <div className="relative">
+                          <User className="absolute left-4 top-4 text-white/20" size={18} />
+                          <input type="text" required value={fullName} onChange={(e) => setFullName(e.target.value)} className="w-full bg-[#0f1117]/50 border border-white/5 rounded-xl p-4 pl-12 text-sm focus:border-[#00d26a]/50 outline-none transition-all" placeholder="John Doe" />
+                        </div>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold uppercase text-[#b3b3b3] ml-1">Username</label>
+                        <div className="relative">
+                          <Hash className="absolute left-4 top-4 text-white/20" size={18} />
+                          <input type="text" required value={username} onChange={(e) => setUsername(e.target.value)} className="w-full bg-[#0f1117]/50 border border-white/5 rounded-xl p-4 pl-12 text-sm focus:border-[#00d26a]/50 outline-none transition-all" placeholder="johndoe123" />
+                        </div>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold uppercase text-[#b3b3b3] ml-1">Phone Number</label>
+                        <div className="relative">
+                          <Phone className="absolute left-4 top-4 text-white/20" size={18} />
+                          <input type="tel" required value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} className="w-full bg-[#0f1117]/50 border border-white/5 rounded-xl p-4 pl-12 text-sm focus:border-[#00d26a]/50 outline-none transition-all" placeholder="+1 234 567 890" />
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold uppercase text-[#b3b3b3] ml-1">{mode === 'login' ? "Email or Username" : "Email Address"}</label>
+                    <div className="relative">
+                      <Mail className="absolute left-4 top-4 text-white/20" size={18} />
+                      <input type="text" required value={(mode === 'login' && !email) ? username : email} onChange={(e) => { 
+                        if(mode === 'login') {
+                           if(e.target.value.includes('@')) setEmail(e.target.value);
+                           else setUsername(e.target.value);
+                        } else setEmail(e.target.value);
+                      }} className="w-full bg-[#0f1117]/50 border border-white/5 rounded-xl p-4 pl-12 text-sm focus:border-[#00d26a]/50 outline-none transition-all" placeholder="name@example.com" />
+                    </div>
                   </div>
-                </div>
-              )}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase text-[#b3b3b3] ml-1">Email Address</label>
-                <div className="relative">
-                  <Mail className="absolute left-4 top-4 text-white/20" size={18} />
-                  <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full bg-[#0f1117] border border-white/5 rounded-xl p-4 pl-12 text-sm focus:border-[#00d26a]/50 outline-none transition-all" placeholder="name@example.com" />
-                </div>
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase text-[#b3b3b3] ml-1">Password</label>
-                <div className="relative">
-                  <Lock className="absolute left-4 top-4 text-white/20" size={18} />
-                  <input type={showPassword ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full bg-[#0f1117] border border-white/5 rounded-xl p-4 pl-12 pr-12 text-sm focus:border-[#00d26a]/50 outline-none transition-all" placeholder="••••••••" />
-                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-4 text-white/20 hover:text-white">
-                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-              </div>
-              {!isLogin && (
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold uppercase text-[#b3b3b3] ml-1">Confirm Password</label>
-                  <div className="relative">
-                    <Lock className="absolute left-4 top-4 text-white/20" size={18} />
-                    <input type={showPassword ? "text" : "password"} required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="w-full bg-[#0f1117] border border-white/5 rounded-xl p-4 pl-12 pr-12 text-sm focus:border-[#00d26a]/50 outline-none transition-all" placeholder="••••••••" />
-                  </div>
-                </div>
-              )}
 
-              {error && <p className="text-red-400 text-xs text-center">{error}</p>}
+                  {mode !== 'forgot' && (
+                    <>
+                      <div className="space-y-1.5">
+                        <div className="flex justify-between items-center px-1">
+                          <label className="text-xs font-bold uppercase text-[#b3b3b3]">Password</label>
+                          {mode === 'login' && (
+                            <button type="button" onClick={() => setMode('forgot')} className="text-xs text-[#2563FF] font-bold hover:underline">Forgot?</button>
+                          )}
+                        </div>
+                        <div className="relative">
+                          <Lock className="absolute left-4 top-4 text-white/20" size={18} />
+                          <input type={showPassword ? "text" : "password"} required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full bg-[#0f1117]/50 border border-white/5 rounded-xl p-4 pl-12 pr-12 text-sm focus:border-[#00d26a]/50 outline-none transition-all" placeholder="••••••••" />
+                          <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-4 text-white/20 hover:text-white">
+                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                          </button>
+                        </div>
+                      </div>
 
-              <motion.button
-                type="submit"
-                disabled={loading}
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.99 }}
-                className="w-full bg-[#00d26a] text-[#0f1117] font-black py-4 rounded-xl transition-all shadow-lg shadow-[#00d26a]/20 flex items-center justify-center"
-              >
-                {loading ? "Processing..." : isLogin ? "Sign In" : "Create Account"}
-              </motion.button>
-            </motion.form>
-          )}
-        </AnimatePresence>
+                      {mode === 'register' && (
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-bold uppercase text-[#b3b3b3] ml-1">Confirm Password</label>
+                          <div className="relative">
+                            <Lock className="absolute left-4 top-4 text-white/20" size={18} />
+                            <input type={showPassword ? "text" : "password"} required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="w-full bg-[#0f1117]/50 border border-white/5 rounded-xl p-4 pl-12 text-sm focus:border-[#00d26a]/50 outline-none transition-all" placeholder="••••••••" />
+                          </div>
+                        </div>
+                      )}
 
-        {!verificationSent && (
-            <div className="mt-8">
-                <div className="relative flex items-center gap-4 text-xs font-bold uppercase text-[#b3b3b3] mb-6">
-                    <div className="flex-1 h-px bg-white/5" /> OR <div className="flex-1 h-px bg-white/5" />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                    <button onClick={() => handleSocialLogin(googleProvider)} className="bg-white/5 hover:bg-white/10 p-4 rounded-xl text-center text-xs font-bold">Google</button>
-                    <button onClick={() => handleSocialLogin(githubProvider)} className="bg-white/5 hover:bg-white/10 p-4 rounded-xl text-center text-xs font-bold">GitHub</button>
-                </div>
-                <p className="mt-8 text-center text-xs font-bold text-[#b3b3b3]">
-                    {isLogin ? "New here?" : "Already have an account?"}
-                    <button onClick={() => setIsLogin(!isLogin)} className="text-[#00d26a] ml-1">
-                        {isLogin ? "Create an account" : "Sign In"}
+                      {/* Mock CAPTCHA */}
+                      <div className="bg-[#0f1117]/80 p-4 rounded-xl border border-white/5 flex items-center gap-4">
+                          <input 
+                            type="checkbox" 
+                            checked={captchaVerified} 
+                            onChange={(e) => setCaptchaVerified(e.target.checked)}
+                            className="w-5 h-5 rounded bg-white/10 accent-[#00d26a]"
+                          />
+                          <span className="text-xs font-bold uppercase text-[#b3b3b3]">I'm not a robot</span>
+                          <div className="ml-auto w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center">
+                              <CheckCircle2 size={16} className={captchaVerified ? "text-[#00d26a]" : "text-white/10"} />
+                          </div>
+                      </div>
+                    </>
+                  )}
+
+                  {error && <p className="text-red-400 text-xs text-center font-bold">{error}</p>}
+
+                  <motion.button
+                    type="submit"
+                    disabled={loading}
+                    whileTap={{ scale: 0.98 }}
+                    className="w-full bg-gradient-to-r from-[#00d26a] to-[#00b05a] text-[#0f1117] font-black py-4 rounded-xl transition-all shadow-lg shadow-[#00d26a]/20 flex items-center justify-center gap-2"
+                  >
+                    {loading ? (
+                      <div className="w-5 h-5 border-2 border-[#0f1117]/20 border-t-[#0f1117] rounded-full animate-spin" />
+                    ) : mode === 'login' ? "Sign In" : mode === 'register' ? "Create Account" : "Send Reset Link"}
+                  </motion.button>
+
+                  <div className="text-center mt-6">
+                    <p className="text-xs font-bold text-[#b3b3b3] mb-2 uppercase tracking-widest">
+                       {mode === 'login' ? "New to the luxury suite?" : "Return to security check?"}
+                    </p>
+                    <button 
+                      type="button"
+                      onClick={() => setMode(mode === 'login' ? 'register' : 'login')} 
+                      className="text-[#00d26a] font-black uppercase text-sm hover:underline tracking-tighter"
+                    >
+                        {mode === 'login' ? "Request Invitation / Register" : "Secure Login"}
                     </button>
-                </p>
-            </div>
-        )}
-      </motion.div>
-    </div>
+                  </div>
+                </motion.form>
+              )}
+            </AnimatePresence>
+          </motion.div>
+      </div>
     </div>
   );
 }

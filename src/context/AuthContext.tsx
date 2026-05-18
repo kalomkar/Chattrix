@@ -1,77 +1,105 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
-import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
-import { auth, db } from '../lib/firebase';
-import { User } from '../types';
-import { socket } from '../lib/socket';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import api from '../services/api';
+
+interface User {
+  id: string; // Internal SQL ID
+  uid: string; // App-wide ID (same as id)
+  fullName: string;
+  displayName: string; // App-wide name (same as fullName)
+  username: string;
+  email: string;
+  photoURL?: string;
+  phoneNumber?: string;
+  ghostMode?: any;
+  autoReply?: any;
+  about?: string;
+  status?: string;
+}
 
 interface AuthContextType {
   currentUser: User | null;
   loading: boolean;
+  login: (data: any) => Promise<void>;
+  register: (data: any) => Promise<void>;
+  logout: () => Promise<void>;
+  updateProfile: (data: any) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
-      if (fbUser) {
-        // If logged in with email, check if verified
-        if (fbUser.email && !fbUser.emailVerified && !fbUser.phoneNumber) {
-          setCurrentUser(null);
-          setLoading(false);
-          return;
-        }
-
-        const userDoc = await getDoc(doc(db, 'users', fbUser.uid));
-        if (userDoc.exists()) {
-          const userData = userDoc.data() as User;
-          setCurrentUser(userData);
-          if (!userData.ghostMode?.hideOnline) {
-             socket.connect();
-             socket.emit('join', fbUser.uid);
-          }
-        } else {
-          // Initialize new user
-          const newUser: User = {
-            uid: fbUser.uid,
-            email: fbUser.email || '',
-            phoneNumber: fbUser.phoneNumber || '',
-            displayName: fbUser.displayName || fbUser.email?.split('@')[0] || fbUser.phoneNumber || 'User',
-            photoURL: fbUser.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${fbUser.uid}`,
-            status: 'Hey there! I am using Chattrix.',
-            ghostMode: { hideOnline: false, hideTyping: false, hideBlueTicks: false },
-            autoReply: { enabled: false, message: "I'm busy right now, I'll get back to you soon!" }
-          };
-          await setDoc(doc(db, 'users', fbUser.uid), newUser);
-          setCurrentUser(newUser);
-          socket.connect();
-          socket.emit('join', fbUser.uid);
-        }
-      } else {
-        setCurrentUser(null);
-        socket.disconnect();
-      }
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
+    const storedUser = localStorage.getItem('user');
+    const token = localStorage.getItem('accessToken');
+    if (storedUser && token) {
+      setCurrentUser(JSON.parse(storedUser));
+    }
+    setLoading(false);
   }, []);
 
+  const login = async (credentials: any) => {
+    try {
+      const res = await api.post('/auth/login', credentials);
+      const { accessToken, refreshToken, user: userData } = res.data;
+      
+      // Map fields for compatibility
+      const mappedUser = {
+        ...userData,
+        uid: userData.id,
+        displayName: userData.fullName
+      };
+
+      localStorage.setItem('accessToken', accessToken);
+      localStorage.setItem('refreshToken', refreshToken);
+      localStorage.setItem('user', JSON.stringify(mappedUser));
+      setCurrentUser(mappedUser);
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const register = async (userData: any) => {
+    try {
+      await api.post('/auth/register', userData);
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const logout = async () => {
+    try {
+      const refreshToken = localStorage.getItem('refreshToken');
+      if (refreshToken) {
+        await api.post('/auth/logout', { refreshToken });
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
+      setCurrentUser(null);
+    }
+  };
+
+  const updateProfile = (data: any) => {
+    const newUser = { ...currentUser, ...data };
+    setCurrentUser(newUser);
+    localStorage.setItem('user', JSON.stringify(newUser));
+  };
+
   return (
-    <AuthContext.Provider value={{ currentUser, loading }}>
-      {!loading && children}
+    <AuthContext.Provider value={{ currentUser, loading, login, register, logout, updateProfile }}>
+      {children}
     </AuthContext.Provider>
   );
-}
+};
 
-export function useAuth() {
+export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within an AuthProvider');
   return context;
-}
+};

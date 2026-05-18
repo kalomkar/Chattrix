@@ -6,6 +6,15 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import dotenv from 'dotenv';
+import cors from 'cors';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+import cookieParser from 'cookie-parser';
+
+// New Imports for SQL Auth
+import sequelize from './server/config/db.ts';
+import authRoutes from './server/routes/authRoutes.ts';
+import userRoutes from './server/routes/userRoutes.ts';
 
 dotenv.config();
 
@@ -142,6 +151,34 @@ async function startServer() {
 
 
   const app = express();
+  
+  // Security Middlewares
+  app.use(helmet({
+    contentSecurityPolicy: false, // For development and iFrame support
+  }));
+  app.use(cors());
+  app.use(cookieParser());
+  app.use(express.json());
+
+  // Rate Limiting
+  const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100
+  });
+  app.use('/api/auth/', limiter);
+
+  // SQL Database Sync
+  try {
+    await sequelize.sync();
+    console.log('[DB] SQL Database synchronized.');
+  } catch (err) {
+    console.error('[DB] Database sync failed:', err);
+  }
+
+  // Auth & User Routes
+  app.use('/api/auth', authRoutes);
+  app.use('/api/user', userRoutes);
+
   const httpServer = createServer(app);
   const io = new Server(httpServer, {
     cors: {
@@ -151,8 +188,6 @@ async function startServer() {
   });
 
   const PORT = 3000;
-
-  app.use(express.json());
 
   // Socket.io logic
   const users = new Map<string, string>(); // userId -> socketId
