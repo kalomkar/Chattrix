@@ -1,31 +1,62 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { X, Camera, Save, User as UserIcon, Info, Mail, Phone, Ghost } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { cn } from '../../lib/utils';
+import api from '../../services/api';
 
 interface ProfileModalProps {
   onClose: () => void;
 }
 
 export default function ProfileModal({ onClose }: ProfileModalProps) {
-  const { currentUser } = useAuth();
+  const { currentUser, updateProfile } = useAuth();
   const [displayName, setDisplayName] = useState(currentUser?.displayName || '');
   const [about, setAbout] = useState(currentUser?.about || 'Hey there! I am using Chattrix.');
   const [status, setStatus] = useState(currentUser?.status || '');
+  const [photoURL, setPhotoURL] = useState(currentUser?.photoURL || '');
   const [saving, setSaving] = useState(false);
+  const [showAvatarPicker, setShowAvatarPicker] = useState(false);
+
+  const avatars = [
+    `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser?.id}`,
+    `https://api.dicebear.com/7.x/bottts/svg?seed=${currentUser?.id}`,
+    `https://api.dicebear.com/7.x/pixel-art/svg?seed=${currentUser?.id}`,
+    `https://api.dicebear.com/7.x/adventurer/svg?seed=${currentUser?.id}`,
+    `https://api.dicebear.com/7.x/miniavs/svg?seed=${currentUser?.id}`,
+  ];
 
   const handleSave = async () => {
     if (!currentUser) return;
     setSaving(true);
     try {
+      // 1. Update SQL Backend
+      await api.put('/user/profile', {
+        fullName: displayName,
+        about,
+        status,
+        photoURL
+      });
+
+      // 2. Update Firestore
       await updateDoc(doc(db, 'users', currentUser.uid), {
         displayName,
         about,
-        status
+        status,
+        photoURL: photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.uid}`
       });
+
+      // 3. Update Local State
+      updateProfile({
+        displayName,
+        fullName: displayName,
+        about,
+        status,
+        photoURL
+      });
+
       onClose();
     } catch (err) {
       console.error(err);
@@ -53,22 +84,61 @@ export default function ProfileModal({ onClose }: ProfileModalProps) {
         </div>
 
         <div className="p-8 space-y-8 max-h-[70vh] overflow-y-auto no-scrollbar">
-           {/* Avatar Section */}
-           <div className="flex flex-col items-center">
-              <div className="relative group">
-                 <img 
-                    src={currentUser?.photoURL} 
-                    alt="Profile" 
-                    className="w-32 h-32 rounded-[2.5rem] border-4 border-blue-500/20 object-cover shadow-2xl"
-                 />
-                 <button className="absolute -bottom-2 -right-2 w-10 h-10 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg border-4 border-[#0f172a] hover:scale-110 transition-all cursor-pointer">
-                    <Camera size={18} />
-                 </button>
-                 <div className="absolute inset-0 bg-black/40 rounded-[2.5rem] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <p className="text-xs text-white font-bold uppercase tracking-wider">Change Photo</p>
-                 </div>
-              </div>
-           </div>
+            {/* Avatar Section */}
+            <div className="flex flex-col items-center">
+               <div className="relative group">
+                  <img 
+                     src={photoURL || currentUser?.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser?.uid}`} 
+                     alt="Profile" 
+                     className="w-32 h-32 rounded-[2.5rem] border-4 border-blue-500/20 object-cover shadow-2xl"
+                  />
+                  <button 
+                    onClick={() => setShowAvatarPicker(!showAvatarPicker)}
+                    className="absolute -bottom-2 -right-2 w-10 h-10 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg border-4 border-[#0f172a] hover:scale-110 transition-all cursor-pointer"
+                  >
+                     <Camera size={18} />
+                  </button>
+               </div>
+
+               <AnimatePresence>
+                 {showAvatarPicker && (
+                   <motion.div 
+                     initial={{ opacity: 0, height: 0 }}
+                     animate={{ opacity: 1, height: 'auto' }}
+                     exit={{ opacity: 0, height: 0 }}
+                     className="mt-6 w-full overflow-hidden"
+                   >
+                     <div className="grid grid-cols-5 gap-3 p-4 bg-white/5 rounded-[2rem] border border-white/10">
+                        {avatars.map((url, i) => (
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={() => {
+                              setPhotoURL(url);
+                              setShowAvatarPicker(false);
+                            }}
+                            className={cn(
+                              "relative aspect-square rounded-2xl overflow-hidden border-2 transition-all hover:scale-105",
+                              photoURL === url ? "border-blue-500 ring-2 ring-blue-500/20" : "border-white/10"
+                            )}
+                          >
+                            <img src={url} alt="preset" className="w-full h-full object-cover" />
+                          </button>
+                        ))}
+                     </div>
+                     <div className="mt-3 px-2">
+                        <input 
+                          type="text"
+                          placeholder="Or paste image URL..."
+                          value={photoURL}
+                          onChange={(e) => setPhotoURL(e.target.value)}
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-[10px] text-white focus:outline-none focus:border-blue-500/30 font-mono"
+                        />
+                     </div>
+                   </motion.div>
+                 )}
+               </AnimatePresence>
+            </div>
 
            <div className="space-y-6">
               <div className="space-y-2">

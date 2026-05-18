@@ -1,6 +1,7 @@
 import express from 'express';
 import { body } from 'express-validator';
 import * as authController from '../controllers/authController.ts';
+import { authenticate } from '../middlewares/auth.ts';
 
 const router = express.Router();
 
@@ -15,6 +16,8 @@ router.post('/register', [
 router.post('/login', authController.login);
 router.post('/logout', authController.logout);
 router.post('/refresh-token', authController.refreshToken);
+router.get('/firebase-token', authenticate, authController.getFirebaseToken);
+router.post('/sync-firebase-uid', authenticate, authController.syncFirebaseUid);
 router.get('/verify-email', authController.verifyEmail);
 router.post('/forgot-password', authController.forgotPassword);
 router.post('/reset-password', authController.resetPassword);

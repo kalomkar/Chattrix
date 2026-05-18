@@ -16,12 +16,12 @@ interface StoryContextType {
 const StoryContext = createContext<StoryContextType | undefined>(undefined);
 
 export function StoryProvider({ children }: { children: React.ReactNode }) {
-  const { currentUser } = useAuth();
+  const { currentUser, firebaseAuthReady, firebaseStatus } = useAuth();
   const [stories, setStories] = useState<Story[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!currentUser) {
+    if (!currentUser || firebaseStatus === 'connecting') {
       setStories([]);
       return;
     }
@@ -43,11 +43,15 @@ export function StoryProvider({ children }: { children: React.ReactNode }) {
         setStories(storyData);
         setLoading(false);
       },
-      (error) => handleFirestoreError(error, 'list', 'stories', auth.currentUser)
+      (error) => {
+        if (firebaseStatus === 'connected' || error.code !== 'permission-denied') {
+          handleFirestoreError(error, 'list', 'stories', auth.currentUser);
+        }
+      }
     );
 
     return () => unsubscribe();
-  }, [currentUser]);
+  }, [currentUser, firebaseStatus]);
 
   const uploadStory = async (mediaUrl: string, type: 'image' | 'video' | 'text', caption?: string) => {
     if (!currentUser) return;

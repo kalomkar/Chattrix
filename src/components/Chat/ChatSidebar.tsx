@@ -15,7 +15,7 @@ interface ChatSidebarProps {
 
 export default function ChatSidebar({ onGhostClick }: ChatSidebarProps) {
   const { chats, setActiveChat, activeChat, onlineUsers, typingStatus, contacts, startNewChat, deleteChat, renameChat } = useChat();
-  const { currentUser } = useAuth();
+  const { currentUser, firebaseStatus } = useAuth();
   const [search, setSearch] = useState('');
   const [showProfile, setShowProfile] = useState(false);
   const [showAddContact, setShowAddContact] = useState(false);
@@ -23,6 +23,13 @@ export default function ChatSidebar({ onGhostClick }: ChatSidebarProps) {
   const [editingChatId, setEditingChatId] = useState<string | null>(null);
   const [newChatName, setNewChatName] = useState('');
   const [showMenuId, setShowMenuId] = useState<string | null>(null);
+
+  const statusIndicator = {
+    connecting: { color: 'bg-yellow-500', label: 'Linking Stream...', glow: 'shadow-[0_0_8px_rgba(234,179,8,0.6)]' },
+    connected: { color: 'bg-green-500', label: 'Signal Secure', glow: 'shadow-[0_0_8px_rgba(16,185,129,0.8)]' },
+    error: { color: 'bg-red-500', label: 'Signal Fault', glow: 'shadow-[0_0_8px_rgba(239,68,68,0.6)]' },
+    restricted: { color: 'bg-orange-500', label: 'Protocol Restricted', glow: 'shadow-[0_0_8px_rgba(249,115,22,0.6)]' }
+  }[firebaseStatus];
 
   const novaContact = contacts.find(c => c.uid === 'nova-ai-bot');
   const hasNovaChat = chats.find(c => c.participants.includes('nova-ai-bot'));
@@ -77,8 +84,10 @@ export default function ChatSidebar({ onGhostClick }: ChatSidebarProps) {
           <div className="flex flex-col">
             <h2 className="text-2xl font-[900] tracking-tighter text-[var(--text-primary)] font-display">CHATTRIX</h2>
             <div className="flex items-center gap-1.5 mt-0.5">
-              <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
-              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-green-500/80">Network Active</span>
+              <div className={cn("w-1.5 h-1.5 rounded-full animate-pulse", statusIndicator.color, statusIndicator.glow)} />
+              <span className={cn("text-[9px] font-black uppercase tracking-[0.2em]", firebaseStatus === 'connected' ? 'text-green-500/80' : 'text-orange-500/80')}>
+                {statusIndicator.label}
+              </span>
             </div>
           </div>
           <div className="flex items-center gap-1">

@@ -32,7 +32,7 @@ interface ChatContextType {
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
 export function ChatProvider({ children }: { children: React.ReactNode }) {
-  const { currentUser } = useAuth();
+  const { currentUser, firebaseAuthReady, firebaseStatus } = useAuth();
   const [chats, setChats] = useState<Chat[]>([]);
   const [activeChat, setActiveChat] = useState<Chat | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -66,11 +66,15 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         
         setContacts(contactsData);
       },
-      (error) => handleFirestoreError(error, 'list', `users/${currentUser.uid}/contacts`, auth.currentUser)
+      (error) => {
+        if (firebaseAuthReady || error.code !== 'permission-denied') {
+          handleFirestoreError(error, 'list', `users/${currentUser.uid}/contacts`, auth.currentUser);
+        }
+      }
     );
 
     return () => unsubscribe();
-  }, [currentUser]);
+  }, [currentUser, firebaseAuthReady]);
 
   // Fetch scheduled messages
   useEffect(() => {
@@ -83,9 +87,13 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const msgs = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as ScheduledMessage));
       setScheduledMessages(msgs);
-    }, (error) => handleFirestoreError(error, 'list', 'scheduled_messages', auth.currentUser));
+    }, (error) => {
+      if (firebaseAuthReady || error.code !== 'permission-denied') {
+        handleFirestoreError(error, 'list', 'scheduled_messages', auth.currentUser);
+      }
+    });
     return () => unsubscribe();
-  }, [currentUser]);
+  }, [currentUser, firebaseAuthReady]);
 
   const addContact = async (contactInfo: string) => {
     if (!currentUser) return;
@@ -144,7 +152,10 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       const chatQuery = query(chatsRef, where('participants', 'array-contains', currentUser.uid));
       const chatSnapshot = await getDocs(chatQuery);
       
-      let existingChat = chatSnapshot.docs.find(d => (d.data() as Chat).participants.includes(targetUser!.uid));
+      let existingChat = chatSnapshot.docs.find(d => {
+        const p = (d.data() as Chat).participants;
+        return p.includes(targetUser!.uid);
+      });
       
       if (existingChat) {
         setActiveChat({ id: existingChat.id, ...existingChat.data() } as Chat);
@@ -168,8 +179,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 
   // Fetch chats
   useEffect(() => {
-    if (!currentUser) return;
-
+    if (!currentUser || firebaseStatus === 'connecting') return;
     const q = query(
       collection(db, 'chats'),
       where('participants', 'array-contains', currentUser.uid),
@@ -212,15 +222,19 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         }
         setChats(chatsData);
       },
-      (error) => handleFirestoreError(error, 'list', 'chats', auth.currentUser)
+      (error) => {
+        if (firebaseStatus === 'connected' || error.code !== 'permission-denied') {
+          handleFirestoreError(error, 'list', 'chats', auth.currentUser);
+        }
+      }
     );
 
     return () => unsubscribe();
-  }, [currentUser]);
+  }, [currentUser, firebaseStatus]);
 
   // Fetch messages when activeChat changes
   useEffect(() => {
-    if (!activeChat) {
+    if (!activeChat || firebaseStatus === 'connecting') {
       setMessages([]);
       return;
     }
@@ -264,11 +278,15 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             }
         });
       },
-      (error) => handleFirestoreError(error, 'list', `chats/${activeChat.id}/messages`, auth.currentUser)
+      (error) => {
+        if (firebaseStatus === 'connected' || error.code !== 'permission-denied') {
+          handleFirestoreError(error, 'list', `chats/${activeChat.id}/messages`, auth.currentUser);
+        }
+      }
     );
 
     return () => unsubscribe();
-  }, [activeChat, currentUser]);
+  }, [activeChat, currentUser, firebaseStatus]);
 
   // Background timer to prune expired messages from state and DB and trigger re-renders
   useEffect(() => {

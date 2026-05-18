@@ -152,6 +152,9 @@ async function startServer() {
 
   const app = express();
   
+  // Trust proxy for accurate rate limiting when behind a load balancer/proxy
+  app.set('trust proxy', 1);
+  
   // Security Middlewares
   app.use(helmet({
     contentSecurityPolicy: false, // For development and iFrame support
@@ -169,7 +172,7 @@ async function startServer() {
 
   // SQL Database Sync
   try {
-    await sequelize.sync();
+    await sequelize.sync({ alter: true });
     console.log('[DB] SQL Database synchronized.');
   } catch (err) {
     console.error('[DB] Database sync failed:', err);

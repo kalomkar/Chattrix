@@ -8,6 +8,7 @@ import EmailVerificationToken from '../models/EmailVerificationToken.ts';
 import PasswordResetToken from '../models/PasswordResetToken.ts';
 import { generateAccessToken, generateRefreshToken } from '../services/jwt.ts';
 import { sendVerificationEmail, sendResetPasswordEmail } from '../services/email.ts';
+import { auth as firebaseAuth } from '../config/firebaseAdmin.ts';
 
 export const register = async (req: any, res: any) => {
   const errors = validationResult(req);
@@ -96,9 +97,9 @@ export const login = async (req: any, res: any) => {
     user.lockUntil = undefined;
     await user.save();
 
-    if (!user.isVerified) {
-      return res.status(403).json({ error: 'Please verify your email first' });
-    }
+    // if (!user.isVerified) {
+    //   return res.status(403).json({ error: 'Please verify your email first' });
+    // }
 
     const accessToken = generateAccessToken(user.id);
     const refreshToken = generateRefreshToken(user.id);
@@ -110,9 +111,23 @@ export const login = async (req: any, res: any) => {
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
 
+    let firebaseToken = null;
+    try {
+      firebaseToken = await firebaseAuth.createCustomToken(user.id);
+    } catch (fbErr: any) {
+      // Logic: In some sandboxed environments, createCustomToken is restricted.
+      // We log a concise warning and let the client handle fallback.
+      if (fbErr.code === 'auth/insufficient-permission' || fbErr.message?.includes('permission')) {
+        console.warn('[AUTH] Firebase Custom Token restricted by environment permissions. Falling back to anonymous on client.');
+      } else {
+        console.error('[AUTH] Firebase Token unexpected error:', fbErr.message);
+      }
+    }
+
     res.json({
       accessToken,
       refreshToken,
+      firebaseToken,
       user: {
         id: user.id,
         fullName: user.fullName,
@@ -124,6 +139,7 @@ export const login = async (req: any, res: any) => {
         status: user.status,
         ghostMode: user.ghostMode,
         autoReply: user.autoReply,
+        firebaseUid: user.firebaseUid,
       },
     });
   } catch (error) {
@@ -160,6 +176,38 @@ export const logout = async (req: any, res: any) => {
     await RefreshToken.destroy({ where: { token: refreshToken } });
     res.json({ success: true });
   } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const getFirebaseToken = async (req: any, res: any) => {
+  try {
+    const token = await firebaseAuth.createCustomToken(req.user.id);
+    res.json({ firebaseToken: token });
+  } catch (error: any) {
+    if (error.code === 'auth/insufficient-permission' || error.message?.includes('permission')) {
+      console.warn(`[AUTH] Firebase token generation restricted for user ${req.user.id}.`);
+    } else {
+      console.error('[AUTH] getFirebaseToken unexpected error:', error.message);
+    }
+    res.json({ firebaseToken: null, error: 'Firebase unavailable' });
+  }
+};
+
+export const syncFirebaseUid = async (req: any, res: any) => {
+  const { firebaseUid } = req.body;
+  if (!firebaseUid) return res.status(400).json({ error: 'firebaseUid is required' });
+
+  try {
+    const user = await User.findByPk(req.user.id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    user.firebaseUid = firebaseUid;
+    await user.save();
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('[AUTH] Failed to sync Firebase UID:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };

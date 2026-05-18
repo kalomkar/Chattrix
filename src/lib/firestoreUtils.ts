@@ -31,7 +31,11 @@ export function handleFirestoreError(error: any, operationType: FirestoreErrorIn
         })) || []
       }
     };
-    throw new Error(JSON.stringify(errorInfo));
+    console.warn('[FIRESTORE] Permission Denied (might resolve after sync):', JSON.stringify(errorInfo));
+    // We log but don't THROW here to avoid crashing the whole React tree during state transitions
+    // return errorInfo; 
+  } else {
+    console.error('[FIRESTORE] Error:', error);
+    throw error;
   }
-  throw error;
 }

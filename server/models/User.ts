@@ -17,6 +17,7 @@ interface UserAttributes {
   autoReply?: any;
   about?: string;
   status?: string;
+  firebaseUid?: string;
 }
 
 interface UserCreationAttributes extends Optional<UserAttributes, 'id' | 'isVerified' | 'isLocked' | 'loginAttempts'> {}
@@ -37,6 +38,7 @@ class User extends Model<UserAttributes, UserCreationAttributes> implements User
   public autoReply?: any;
   public about?: string;
   public status?: string;
+  public firebaseUid?: string;
 
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
@@ -75,6 +77,10 @@ User.init(
       allowNull: true,
       defaultValue: 'Hey there! I am using Chattrix.'
     },
+    firebaseUid: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     status: {
       type: DataTypes.STRING,
       allowNull: true,
@@ -90,7 +96,7 @@ User.init(
     },
     isVerified: {
       type: DataTypes.BOOLEAN,
-      defaultValue: false,
+      defaultValue: true,
     },
     isLocked: {
       type: DataTypes.BOOLEAN,

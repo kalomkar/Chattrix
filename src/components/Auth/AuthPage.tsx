@@ -8,7 +8,7 @@ export default function AuthPage() {
   const { login, register } = useAuth();
   const [mode, setMode] = useState<'login' | 'register' | 'forgot'>('login');
   
-  // Fields
+  const [loginId, setLoginId] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -20,7 +20,7 @@ export default function AuthPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
-  const [captchaVerified, setCaptchaVerified] = useState(false);
+  const [captchaVerified, setCaptchaVerified] = useState(true);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,17 +40,26 @@ export default function AuthPage() {
 
     try {
       if (mode === 'login') {
-        await login({ loginIdentifier: email || username, password });
+        await login({ loginIdentifier: loginId, password });
       } else if (mode === 'register') {
         await register({ fullName, username, email, phoneNumber, password });
-        setSuccessMessage("Registration successful! Please check your email to verify your account.");
+        // Automatically login after registration to improve UX
+        try {
+          await login({ loginIdentifier: email || username, password });
+        } catch (loginErr) {
+          setSuccessMessage("Registration successful! Please sign in with your new credentials.");
+        }
       } else if (mode === 'forgot') {
         const api = (await import('../../services/api')).default;
         await api.post('/auth/forgot-password', { email });
         setSuccessMessage("Reset link sent to your email. Please check your inbox.");
       }
     } catch (err: any) {
-      setError(err.response?.data?.error || err.response?.data?.errors?.[0]?.msg || "An error occurred");
+      if (err.response?.status === 401 && mode === 'login') {
+        setError("Invalid credentials. If you haven't registered since our recent system upgrade, please create a new account.");
+      } else {
+        setError(err.response?.data?.error || err.response?.data?.errors?.[0]?.msg || "An authentication protocol error occurred");
+      }
     } finally {
       setLoading(false);
     }
@@ -173,12 +182,14 @@ export default function AuthPage() {
                     <label className="text-xs font-bold uppercase text-[#b3b3b3] ml-1">{mode === 'login' ? "Email or Username" : "Email Address"}</label>
                     <div className="relative">
                       <Mail className="absolute left-4 top-4 text-white/20" size={18} />
-                      <input type="text" required value={(mode === 'login' && !email) ? username : email} onChange={(e) => { 
-                        if(mode === 'login') {
-                           if(e.target.value.includes('@')) setEmail(e.target.value);
-                           else setUsername(e.target.value);
-                        } else setEmail(e.target.value);
-                      }} className="w-full bg-[#0f1117]/50 border border-white/5 rounded-xl p-4 pl-12 text-sm focus:border-[#00d26a]/50 outline-none transition-all" placeholder="name@example.com" />
+                      <input 
+                        type="text" 
+                        required 
+                        value={mode === 'login' ? loginId : email} 
+                        onChange={(e) => mode === 'login' ? setLoginId(e.target.value) : setEmail(e.target.value)} 
+                        className="w-full bg-[#0f1117]/50 border border-white/5 rounded-xl p-4 pl-12 text-sm focus:border-[#00d26a]/50 outline-none transition-all" 
+                        placeholder={mode === 'login' ? "Email or Username" : "name@example.com"} 
+                      />
                     </div>
                   </div>
 

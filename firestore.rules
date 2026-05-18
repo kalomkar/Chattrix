@@ -11,12 +11,25 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function getSqlId() {
+      let mappingPath = /databases/$(database)/documents/mappings/$(request.auth.uid);
+      return exists(mappingPath) ? get(mappingPath).data.sqlId : request.auth.uid;
+    }
+
     function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
+      return isSignedIn() && (request.auth.uid == userId || getSqlId() == userId);
     }
 
     function isChatParticipant(chatId) {
-      return isSignedIn() && (request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants);
+      let chat = get(/databases/$(database)/documents/chats/$(chatId));
+      let sqlId = getSqlId();
+      return isSignedIn() && (request.auth.uid in chat.data.participants || sqlId in chat.data.participants);
+    }
+
+    // Mappings for ID bridging
+    match /mappings/{fbUid} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && request.auth.uid == fbUid;
     }
 
     // User profiles
@@ -33,10 +46,11 @@ service cloud.firestore {
 
     // Chats
     match /chats/{chatId} {
-      allow read: if isSignedIn() && (request.auth.uid in resource.data.participants);
+      allow read: if isSignedIn() && (request.auth.uid in resource.data.participants || getSqlId() in resource.data.participants);
       allow create: if isSignedIn();
-      allow update: if isSignedIn() && (request.auth.uid in resource.data.participants) && (
+      allow update: if isSignedIn() && (request.auth.uid in resource.data.participants || getSqlId() in resource.data.participants) && (
         request.resource.data.lastMessage.senderId == request.auth.uid || 
+        request.resource.data.lastMessage.senderId == getSqlId() ||
         request.resource.data.lastMessage.senderId == 'nova-ai-bot'
       );
     }
@@ -46,6 +60,7 @@ service cloud.firestore {
       allow read: if isChatParticipant(chatId);
       allow create: if isChatParticipant(chatId) && (
         request.resource.data.senderId == request.auth.uid || 
+        request.resource.data.senderId == getSqlId() ||
         (request.resource.data.senderId == 'nova-ai-bot' && 'nova-ai-bot' in get(/databases/$(database)/documents/chats/$(chatId)).data.participants)
       );
       allow update: if isChatParticipant(chatId);
@@ -59,16 +74,16 @@ service cloud.firestore {
     // Stories (Chattrix Stories)
     match /stories/{storyId} {
       allow read: if isSignedIn();
-      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
-      allow update: if isSignedIn() && (resource.data.uid == request.auth.uid || request.auth.uid in resource.data.views);
-      allow delete: if isSignedIn() && resource.data.uid == request.auth.uid;
+      allow create: if isOwner(request.resource.data.uid);
+      allow update: if isOwner(resource.data.uid) || (isSignedIn() && (request.auth.uid in resource.data.views || getSqlId() in resource.data.views));
+      allow delete: if isOwner(resource.data.uid);
     }
 
     // Scheduled Messages
     match /scheduled_messages/{messageId} {
-      allow read, delete: if isSignedIn() && resource.data.senderId == request.auth.uid;
-      allow create: if isSignedIn() && request.resource.data.senderId == request.auth.uid;
-      allow update: if isSignedIn() && resource.data.senderId == request.auth.uid && (
+      allow read, delete: if isOwner(resource.data.senderId);
+      allow create: if isOwner(request.resource.data.senderId);
+      allow update: if isOwner(resource.data.senderId) && (
         resource.data.status == 'pending' || resource.data.status == 'failed'
       );
     }

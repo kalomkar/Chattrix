@@ -5,11 +5,13 @@ import { Story } from '../../types';
 
 interface StatusViewerProps {
   userId: string;
+  userName?: string;
+  userPhoto?: string;
   stories: Story[];
   onClose: () => void;
 }
 
-export default function StatusViewer({ userId, stories, onClose }: StatusViewerProps) {
+export default function StatusViewer({ userId, userName, userPhoto, stories, onClose }: StatusViewerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [progress, setProgress] = useState(0);
 
@@ -19,16 +21,19 @@ export default function StatusViewer({ userId, stories, onClose }: StatusViewerP
     setProgress(0);
     const interval = setInterval(() => {
       setProgress(prev => {
-        if (prev >= 100) {
-          handleNext();
-          return 100;
-        }
+        if (prev >= 100) return 100;
         return prev + 1;
       });
     }, 50);
 
     return () => clearInterval(interval);
   }, [currentIndex]);
+
+  useEffect(() => {
+    if (progress >= 100) {
+      handleNext();
+    }
+  }, [progress]);
 
   const handleNext = () => {
     if (currentIndex < stories.length - 1) {
@@ -69,12 +74,12 @@ export default function StatusViewer({ userId, stories, onClose }: StatusViewerP
       <div className="absolute top-12 left-6 right-6 flex items-center justify-between z-50">
         <div className="flex items-center gap-3">
            <img 
-              src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${userId}`} 
+              src={userPhoto || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userId}`} 
               alt="User" 
               className="w-10 h-10 rounded-full border border-white/20"
            />
            <div>
-              <p className="text-white text-sm font-bold">User {userId.slice(0, 6)}</p>
+              <p className="text-white text-sm font-bold">{userName || `User ${userId.slice(0, 6)}`}</p>
               <p className="text-white/40 text-[10px] uppercase tracking-tighter">
                 {new Date(currentStory.timestamp.seconds * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </p>

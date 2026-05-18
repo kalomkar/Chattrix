@@ -4,6 +4,7 @@ export interface User {
   phoneNumber?: string;
   displayName: string;
   photoURL: string;
+  firebaseUid?: string;
   status?: string;
   about?: string;
   lastSeen?: any;
